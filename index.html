@@ -106,6 +106,11 @@ nav.tabs svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2
 .login h1{font-size:34px}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:14px}.kv dt{color:var(--muted)}.kv dd{margin:0;font-weight:600;overflow-wrap:anywhere}
 .thumb{width:84px;height:84px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+.scanbox{position:relative;aspect-ratio:1/1;max-width:100%;background:#000;border-radius:14px;overflow:hidden}
+.scanbox video{width:100%;height:100%;object-fit:cover;display:block}
+.reticle{position:absolute;inset:16%;border:3px solid #fff;border-radius:16px;box-shadow:0 0 0 999px rgba(0,0,0,.35)}
+.scanbtn{min-height:64px;font-size:18px;width:100%}
+.scanbtn svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .empty{border:1.5px dashed var(--line);border-radius:14px;padding:18px;text-align:center;color:var(--muted)}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .18s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}}}
 </style>
@@ -159,7 +164,7 @@ const live=()=>S.sessions.find(s=>s.workerId===S.user?.id&&(s.status==='ACTIVE'|
 /* ---------- ui helpers ---------- */
 function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2600)}
 function openSheet(html){const s=$('#sheet');s.innerHTML='<div class="sheet" role="dialog" aria-modal="true">'+html+'</div>';s.hidden=false}
-function closeSheet(){$('#sheet').hidden=true;$('#sheet').innerHTML='';sh=null}
+function closeSheet(){stopScan();$('#sheet').hidden=true;$('#sheet').innerHTML='';sh=null}
 let sh=null; // sheet working state
 const ICON={
  today:'<svg viewBox="0 0 24 24"><path d="M4 12l8-8 8 8M6 10v10h12V10"/></svg>',
@@ -185,7 +190,7 @@ function todayView(){
   if(cur)h+=`<section class="sec"><div class="eyebrow">In progress</div>${taskCard(cur)}</section>`;
   h+=`<section class="sec"><div class="row"><h2>Assigned to you</h2><span class="muted" style="font-size:13px">${assigned.length} waiting</span></div>`;
   h+=assigned.length?`<div class="list">${assigned.map(s=>{const a=actBy(s.actId),b=bedBy(s.bedId);return `<button class="item" data-a="startAssigned" data-id="${s.id}"><div class="grow"><div class="t">${esc(a.name)}</div><div class="s"><span class="bedid">${esc(s.bedId)}</span> ${esc(a.phase)}${b?' · '+bedType(b):''}</div></div><span class="tag">Start</span></button>`}).join('')}</div>`:`<div class="empty">Nothing assigned right now. Pick a bed to start a task.</div>`;
-  h+=`<button class="btn pri" data-a="newTask" ${cur?'disabled':''}>Start a task on a bed</button>${cur?'<div class="muted" style="font-size:13px">Finish or pause-and-complete the task in progress first.</div>':''}</section>`;
+  h+=`<button class="btn pri" data-a="newTask" ${cur?'disabled':''}>Scan a bed to start a task</button>${cur?'<div class="muted" style="font-size:13px">Finish or pause-and-complete the task in progress first.</div>':''}</section>`;
   if(done.length)h+=`<section class="sec"><h2>Done today</h2><div class="list">${done.map(s=>{const a=actBy(s.actId);return `<div class="item"><div class="grow"><div class="t">${esc(a.name)}</div><div class="s"><span class="bedid">${esc(s.bedId)}</span> ${fmt(elapsed(s)).slice(0,5)} h:m${s.qtyText?' · '+esc(s.qtyText):''}</div></div><span class="tag mut">${hhmm(s.endAt)}</span></div>`}).join('')}</div></section>`;
   return h;
 }
@@ -199,16 +204,22 @@ function taskCard(s){
    <div class="muted" style="font-size:13px">Started ${hhmm(s.startAt)} · paused ${Math.round(pausedMs(s,Date.now())/60000)} min</div>
    <div class="btns">${paused?`<button class="btn sun" data-a="resume">Resume</button>`:`<button class="btn" data-a="pause">Pause</button>`}<button class="btn pri" data-a="complete">Complete</button></div></div></div>`;
 }
+function bedListHtml(){
+  const clean=s=>String(s||'').replace(/\s*\d+$/,''),norm=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,''),q=norm(ui.bq);
+  const out=D.bays.map(bay=>{const beds=D.beds.filter(b=>b.bay===bay.id&&(!q||norm(b.id).includes(q)||norm(bay.name).includes(q)));
+    if(!beds.length)return '';
+    return `<section class="sec"><div class="row"><h2>${esc(bay.name)}</h2><span class="muted" style="font-size:13px">${esc(bay.zone)} · ${beds.length} beds</span></div>
+    <div class="muted" style="font-size:13px;margin-top:-4px">${esc(clean(bay.type))}</div>
+    <div class="bedgrid">${beds.map(b=>{const c=S.cohorts[b.id];return `<button class="bedbtn ${c?'full':''}" data-a="openBed" data-id="${b.id}">${b.id.split('-').slice(2).join('')}<small>${c?esc(c.crop.split(' ')[0]):'Empty'}</small></button>`}).join('')}</div></section>`}).join('');
+  return out||'<div class="empty">No bed matches that search.</div>';
+}
 function bedsView(){
-  const bay=bayBy(ui.bay), beds=D.beds.filter(b=>b.bay===ui.bay);
-  let h=`<div><div class="eyebrow">Find a bed</div><h1>Beds</h1></div>
-  <form id="qf" class="sec"><div class="field"><label for="qr">Scan or type a bed code</label>
-   <div style="display:flex;gap:8px"><input id="qr" type="text" autocapitalize="characters" autocorrect="off" placeholder="GH-2-B03" value="${esc(ui.q)}"><button class="btn pri" type="submit" style="min-width:84px">Go</button></div></div>
-   <div class="muted" style="font-size:13px">Camera scanning is not available in this app. Type the code printed on the bed tag.</div></form>
-  <section class="sec"><div class="lbl">Bays</div><div class="bays">${D.bays.map(b=>`<button class="bay" data-a="bay" data-id="${b.id}" aria-pressed="${b.id===ui.bay}"><b>${b.id}</b><span>${esc(b.zone)} · ${b.count} beds</span></button>`).join('')}</div></section>
-  <section class="sec"><div class="row"><h2>${esc(bay.name)}</h2><span class="muted" style="font-size:13px">${esc(bay.type)}</span></div>
-   <div class="bedgrid">${beds.map(b=>{const c=S.cohorts[b.id];return `<button class="bedbtn ${c?'full':''}" data-a="openBed" data-id="${b.id}">${b.id.split('-').slice(2).join('')}<small>${c?esc(c.crop.split(' ')[0]):'Empty'}</small></button>`}).join('')}</div></section>`;
-  return h;
+  return `<div><div class="eyebrow">Scan location</div><h1>Beds</h1></div>
+  <button class="btn pri scanbtn" data-a="scan"><svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M4 12h16"/></svg>Scan bed QR code</button>
+  <form id="qf" class="sec"><div class="field"><label for="qr">Or enter the code</label>
+   <div style="display:flex;gap:8px"><input id="qr" type="text" autocapitalize="characters" autocorrect="off" placeholder="GH-2-B03" value="${esc(ui.q)}"><button class="btn" type="submit" style="min-width:84px">Go</button></div></div></form>
+  <div class="field"><label for="bq">Or search beds (no camera needed)</label><input id="bq" type="text" autocapitalize="characters" autocorrect="off" placeholder="Type a bay or bed, like GH-2 or B03" value="${esc(ui.bq||'')}"></div>
+  <div id="bedlist" class="sec">${bedListHtml()}</div>`;
 }
 function bedView(){
   const b=bedBy(ui.bed);if(!b){ui.tab='beds';return bedsView()}
@@ -219,6 +230,7 @@ function bedView(){
   <div><div class="eyebrow">${esc(bayBy(b.bay).name)} · ${esc(bayBy(b.bay).zone)}</div><h1 class="mono" style="font-family:var(--f-mono)">${b.id}</h1></div>
   <div class="card"><dl class="kv"><dt>Type</dt><dd>${bedType(b)}</dd><dt>Length</dt><dd>${b.len} ft</dd><dt>Crop</dt><dd>${c?esc(c.crop)+' <span class="tag '+(c.stage==='HARVEST_READY'?'sun':'')+'">'+(STAGE[c.stage]||c.stage)+'</span>':'<span class="tag mut">Empty</span>'}</dd>${c?`<dt>Cohort</dt><dd class="mono">${esc(c.id)}</dd><dt>${c.planted?'Planted':'Planned'}</dt><dd>${esc(c.dob)}${c.planted?' · day '+days:''}</dd>${c.stage==='PRE_PLANTING'?`<dt>Bed</dt><dd>${c.ver?'<span class="tag">Verified ready</span>':'<span class="tag mut">Waiting for manager check</span>'}</dd>`:''}`:''}</dl>
   </div>
+  ${S.sessions.some(s=>s.bedId===b.id&&s.status==='ASSIGNED')?`<section class="sec"><h2>Assigned to you here</h2><div class="list">${S.sessions.filter(s=>s.bedId===b.id&&s.status==='ASSIGNED').map(s=>`<button class="item" data-a="startAssigned" data-id="${s.id}"><div class="grow"><div class="t">${esc(actBy(s.actId).name)}</div><div class="s">${esc(actBy(s.actId).phase)}</div></div><span class="tag">Start</span></button>`).join('')}</div></section>`:''}
   <div class="btns"><button class="btn pri" data-a="startHere" data-id="${b.id}" ${cur?'disabled':''}>Start task here</button><button class="btn" data-a="scoutHere" data-id="${b.id}">Scout</button></div>
   ${cur?'<div class="muted" style="font-size:13px">A task is already in progress.</div>':''}
   <section class="sec"><h2>Recent work</h2>${hist.length?`<div class="list">${hist.map(l=>`<div class="item"><div class="grow"><div class="t">${esc(l.act)}</div><div class="s">${esc(l.worker)} · ${new Date(l.end).toLocaleDateString()} · ${l.min} min${l.qty?' · '+esc(l.qty):''}</div></div></div>`).join('')}</div>`:'<div class="empty">No work logged on this bed yet.</div>'}</section>
@@ -251,10 +263,59 @@ function recent(arr,t,s){const r=arr.filter(x=>x.workerId===S.user.id).slice(-3)
 
 /* ---------- render ---------- */
 function connPill(){
+  if(!S.user)return '';
   const q=S.user?S.queue.filter(x=>x.u===S.user.id).length:0;
   if(!ui.online)return `<button class="pill off" data-a="conn"><i></i>Offline${q?' · '+q+' to sync':''}</button>`;
   if(q)return `<button class="pill" data-a="conn"><i></i>${q} to sync</button>`;
   return `<button class="pill on" data-a="conn"><i></i>Live</button>`;
+}
+function resolveBed(raw){
+  const s=String(raw||'').trim(),reg=D.qr&&(D.qr[s]||D.qr[s.toUpperCase()]);
+  if(reg&&bedBy(reg))return{bed:reg,code:D.qr[s]?s:s.toUpperCase()};
+  const m=s.toUpperCase().match(/GH-?(\d)-?([RBG])-?(\d{1,2})/);
+  if(m){const id=`GH-${m[1]}-${m[2]}${m[3].padStart(2,'0')}`;if(bedBy(id))return{bed:id}}
+  return null;
+}
+let scanner=null;
+function stopScan(){if(scanner){scanner.on=false;try{scanner.stream.getTracks().forEach(t=>t.stop())}catch(e){}scanner=null}}
+function loadJsQR(){return window.jsQR?Promise.resolve():new Promise(res=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';s.onload=()=>res();s.onerror=()=>res();document.head.appendChild(s)})}
+function onScanned(hit){
+  stopScan();closeSheet();
+  if(hit.code)enqueue('wScan',{code:hit.code,bedId:hit.bed,at:Date.now()});
+  ui.tab='beds';ui.bed=hit.bed;render();scrollTo(0,0);try{navigator.vibrate&&navigator.vibrate(60)}catch(e){}toast('Bed '+hit.bed);
+}
+async function openScanner(){
+  openSheet(`<div class="hd"><h2>Scan bed QR code</h2><button class="btn ghost sm" data-a="close">Close</button></div>
+   <div class="scanbox"><video id="vid" playsinline muted></video><div class="reticle"></div></div>
+   <div id="scanmsg" class="muted">Starting camera…</div>
+   <button class="btn" data-a="close">Enter or search the bed instead</button>`);
+  const msg=$('#scanmsg'),vid=$('#vid');
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){msg.textContent='The camera is not available in this browser or page. Enter the code or search for the bed.';return}
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},audio:false});
+    if($('#sheet').hidden){stream.getTracks().forEach(t=>t.stop());return}
+    scanner={stream,on:true};vid.srcObject=stream;await vid.play();
+    const det=('BarcodeDetector' in window)?new BarcodeDetector({formats:['qr_code']}):null;
+    if(!det){await loadJsQR();if(!window.jsQR){msg.textContent='The scanner could not load. Check your connection, or enter the code instead.';return}}
+    const cv=document.createElement('canvas'),cx=cv.getContext('2d',{willReadFrequently:true});let last='',lastAt=0;
+    const tick=async()=>{
+      if(!scanner||!scanner.on)return;
+      let raw='';
+      try{
+        if(vid.readyState>=2&&vid.videoWidth){
+          if(det){const r=await det.detect(vid);raw=r[0]?r[0].rawValue:''}
+          else{const k=Math.min(1,640/vid.videoWidth);cv.width=Math.round(vid.videoWidth*k);cv.height=Math.round(vid.videoHeight*k);cx.drawImage(vid,0,0,cv.width,cv.height);
+            const im=cx.getImageData(0,0,cv.width,cv.height),r=jsQR(im.data,im.width,im.height,{inversionAttempts:'dontInvert'});raw=r?r.data:''}
+        }
+      }catch(e){}
+      if(raw){const hit=resolveBed(raw);if(hit){onScanned(hit);return}
+        if(raw!==last||Date.now()-lastAt>2500){last=raw;lastAt=Date.now();msg.textContent='Code not recognised: '+raw.slice(0,40)}}
+      setTimeout(tick,140);
+    };
+    msg.textContent='Point the camera at the QR tag on the bed.';tick();
+  }catch(e){
+    msg.textContent=e&&e.name==='NotAllowedError'?'Camera permission was denied. Allow the camera for this site, or enter the code instead.':'The camera could not start. Enter the code or search for the bed.';
+  }
 }
 function paintTop(){const logged=!!S.user;$('#top').innerHTML=logged?`<div class="brand">GH Worker App<small>${esc(S.user.name)} · ${esc(S.user.role)}</small></div>${connPill()}<button class="pill" data-a="logout">Sign out</button>`:`<div class="brand">GH Worker App</div>${connPill()}`;}
 function render(){
@@ -337,7 +398,8 @@ document.addEventListener('click',e=>{
    case'tab':ui.tab=id;ui.bed=null;render();scrollTo(0,0);break;
    case'bay':ui.bay=id;render();break;
    case'openBed':ui.bed=id;render();scrollTo(0,0);break;
-   case'newTask':ui.tab='beds';ui.bed=null;render();toast('Pick the bed you are working on');break;
+   case'newTask':ui.tab='beds';ui.bed=null;render();openScanner();break;
+   case'scan':openScanner();break;
    case'startHere':activitySheet(id);break;
    case'scoutHere':ui.scout={bed:id,domains:[],sev:0,note:'',photo:null};ui.tab='scout';render();break;
    case'pickAct':{const A=actBy(id),C=S.cohorts[sh.bedId];
@@ -382,10 +444,9 @@ document.addEventListener('submit',async e=>{
     S.token=r.token;S.user=r.user;S.lastUser=r.user.id;ui.loginMsg='';ui.online=true;ui.tab='today';save();render();pull();
   }
   if(e.target.id==='qf'){
-    const raw=$('#qr').value.toUpperCase().replace(/\s/g,''),m=raw.match(/^GH-?(\d)-?([RBG])-?(\d{1,2})$/);
-    const id=m?`GH-${m[1]}-${m[2]}${m[3].padStart(2,'0')}`:null;
-    if(id&&bedBy(id)){ui.q='';ui.bed=id;ui.bay=bedBy(id).bay;render()}
-    else{ui.q=raw;toast('No bed matches "'+raw+'". Use the format GH-2-B03.')}
+    const raw=$('#qr').value.trim(),hit=resolveBed(raw);
+    if(hit){ui.q='';ui.bed=hit.bed;if(hit.code)enqueue('wScan',{code:hit.code,bedId:hit.bed,at:Date.now()});render()}
+    else{ui.q=raw;toast('No bed matches "'+raw+'". Use a code like GH-2-B03.')}
   }
 });
 document.addEventListener('input',e=>{
@@ -393,6 +454,7 @@ document.addEventListener('input',e=>{
   if(i==='aq'){sh.q=e.target.value;drawActs()}
   else if(i==='sc-note')ui.scout.note=e.target.value;
   else if(i==='is-note')ui.issue.note=e.target.value;
+  else if(i==='bq'){ui.bq=e.target.value;$('#bedlist').innerHTML=bedListHtml()}
   else if(i==='wid')ui.wid=e.target.value;
 });
 document.addEventListener('change',e=>{
@@ -436,8 +498,8 @@ function actIdByName(n){
   const id='X-'+k.replace(/\W+/g,'-');D.acts.push({id,name:String(n),group:'Other',phase:'Maintenance',count:false,unit:'',avail:false,desc:''});return id;
 }
 function applySync(r){
-  D.beds=r.beds;D.bays=r.bays;if(r.acts.length)D.acts=r.acts;
-  S.ref={beds:D.beds,bays:D.bays,acts:D.acts};
+  D.beds=r.beds;D.bays=r.bays;D.qr=r.qr||{};if(r.acts.length)D.acts=r.acts;
+  S.ref={beds:D.beds,bays:D.bays,acts:D.acts,qr:D.qr};
   if(!D.bays.find(b=>b.id===ui.bay)&&D.bays[0])ui.bay=D.bays[0].id;
   const pend=new Set(S.queue.map(q=>q.p.sessionId).filter(Boolean)),pid=new Set(S.queue.map(q=>q.p.id).filter(Boolean));
   const fresh=r.sessions.filter(x=>!pend.has(x.id)&&x.startAt!==null||x.status==='ASSIGNED'&&!pend.has(x.id)).map(x=>({id:x.id,workerId:x.workerId,managerId:x.managerId,bedId:x.bedId,actId:actIdByName(x.actName),status:x.status,startAt:x.startAt,endAt:x.endAt,pauses:x.pauses,cropId:x.cropId||undefined,qtyText:x.qtyText}));
