@@ -1,4 +1,7 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>GH Worker App</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
@@ -20,6 +23,7 @@
   --accent:#4fc487; --accent-ink:#06210f; --accent-soft:#1d3a2a;
   --sun:#f0b83a; --sun-soft:#3a2f10; --bad:#ff8a80; --bad-soft:#40201d; --ok:#4fc487; --scrim:rgba(0,0,0,.65); color-scheme:dark}
 *{box-sizing:border-box}
+body{margin:0}
 [hidden]{display:none!important}
 html,body{height:100%}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.4;-webkit-tap-highlight-color:transparent}
@@ -116,21 +120,26 @@ nav.tabs svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2
 <div id="toast" hidden></div>
 
 <script>
-const D={"beds": [{"id": "GH-1-R01", "bay": "GH-1", "n": 1, "len": 288, "type": "Heated In-Ground Soil Row 1"}, {"id": "GH-1-R02", "bay": "GH-1", "n": 2, "len": 288, "type": "Heated In-Ground Soil Row 2"}, {"id": "GH-1-R03", "bay": "GH-1", "n": 3, "len": 288, "type": "Heated In-Ground Soil Row 3"}, {"id": "GH-1-R04", "bay": "GH-1", "n": 4, "len": 288, "type": "Heated In-Ground Soil Row 4"}, {"id": "GH-1-R05", "bay": "GH-1", "n": 5, "len": 288, "type": "Heated In-Ground Soil Row 5"}, {"id": "GH-2-B01", "bay": "GH-2", "n": 1, "len": 288, "type": "Rolling Aluminum Bench 1"}, {"id": "GH-2-B02", "bay": "GH-2", "n": 2, "len": 288, "type": "Rolling Aluminum Bench 2"}, {"id": "GH-2-B03", "bay": "GH-2", "n": 3, "len": 288, "type": "Rolling Aluminum Bench 3"}, {"id": "GH-2-B04", "bay": "GH-2", "n": 4, "len": 288, "type": "Rolling Aluminum Bench 4"}, {"id": "GH-2-B05", "bay": "GH-2", "n": 5, "len": 288, "type": "Rolling Aluminum Bench 5"}, {"id": "GH-2-B06", "bay": "GH-2", "n": 6, "len": 288, "type": "Rolling Aluminum Bench 6"}, {"id": "GH-2-B07", "bay": "GH-2", "n": 7, "len": 288, "type": "Rolling Aluminum Bench 7"}, {"id": "GH-2-B08", "bay": "GH-2", "n": 8, "len": 288, "type": "Rolling Aluminum Bench 8"}, {"id": "GH-3-B01", "bay": "GH-3", "n": 1, "len": 288, "type": "Rolling Aluminum Bench 1"}, {"id": "GH-3-B02", "bay": "GH-3", "n": 2, "len": 288, "type": "Rolling Aluminum Bench 2"}, {"id": "GH-3-B03", "bay": "GH-3", "n": 3, "len": 288, "type": "Rolling Aluminum Bench 3"}, {"id": "GH-3-B04", "bay": "GH-3", "n": 4, "len": 288, "type": "Rolling Aluminum Bench 4"}, {"id": "GH-3-B05", "bay": "GH-3", "n": 5, "len": 288, "type": "Rolling Aluminum Bench 5"}, {"id": "GH-3-B06", "bay": "GH-3", "n": 6, "len": 288, "type": "Rolling Aluminum Bench 6"}, {"id": "GH-3-B07", "bay": "GH-3", "n": 7, "len": 288, "type": "Rolling Aluminum Bench 7"}, {"id": "GH-3-B08", "bay": "GH-3", "n": 8, "len": 288, "type": "Rolling Aluminum Bench 8"}, {"id": "GH-4-G01", "bay": "GH-4", "n": 1, "len": 288, "type": "Hanging Gutter Line 1"}, {"id": "GH-4-G02", "bay": "GH-4", "n": 2, "len": 288, "type": "Hanging Gutter Line 2"}, {"id": "GH-4-G03", "bay": "GH-4", "n": 3, "len": 288, "type": "Hanging Gutter Line 3"}, {"id": "GH-4-G04", "bay": "GH-4", "n": 4, "len": 288, "type": "Hanging Gutter Line 4"}, {"id": "GH-4-G05", "bay": "GH-4", "n": 5, "len": 288, "type": "Hanging Gutter Line 5"}], "bays": [{"id": "GH-1", "name": "Greenhouse Bay 1", "zone": "Cold Climate Zone", "type": "Heated In-Ground Soil Row 1", "count": 5}, {"id": "GH-2", "name": "Greenhouse Bay 2", "zone": "Temperate Commercial Canopy", "type": "Rolling Aluminum Bench 1", "count": 8}, {"id": "GH-3", "name": "Greenhouse Bay 3", "zone": "Indigenous Specialty Canopy", "type": "Rolling Aluminum Bench 1", "count": 8}, {"id": "GH-4", "name": "Greenhouse Bay 4", "zone": "Tropical High-Wire House", "type": "Hanging Gutter Line 1", "count": 5}], "crops": [{"id": "MCH-GH", "name": "Mchicha", "cat": "Leafy Greens"}, {"id": "SUK-GH", "name": "Sukuma Wiki", "cat": "Leafy Greens"}, {"id": "MUS-GH", "name": "Mustard Greens", "cat": "Leafy Greens"}, {"id": "CHD-GH", "name": "Swiss Chard", "cat": "Leafy Greens"}, {"id": "CPL-GH", "name": "Cowpea Leaves", "cat": "Leafy Greens"}, {"id": "SPD-GH", "name": "Spider Plant", "cat": "Leafy Greens"}, {"id": "BTL-GH", "name": "Bitter Leaf", "cat": "Leafy Greens"}, {"id": "UGW-GH", "name": "Ugwu", "cat": "Leafy Greens"}, {"id": "SP-GH", "name": "Sweet Potatoes", "cat": "Greenhouse Only"}, {"id": "TY-GH", "name": "True Yams", "cat": "Greenhouse Only"}, {"id": "CAS-GH", "name": "Cassava", "cat": "Greenhouse Only"}, {"id": "PLN-GH", "name": "Plantains", "cat": "Greenhouse Only"}, {"id": "CAR-GH", "name": "Carrots", "cat": "Cool-Season Roots"}, {"id": "BET-GH", "name": "Beets", "cat": "Cool-Season Roots"}, {"id": "TUR-GH", "name": "Turnips", "cat": "Cool-Season Roots"}, {"id": "ONI-GH", "name": "Onions", "cat": "Bulb Crops"}, {"id": "ASP-GH", "name": "Asparagus", "cat": "Perennial Crown"}, {"id": "SB-GH", "name": "Scotch Bonnet", "cat": "Warm-Season Fruiting Crops"}, {"id": "HAB-GH", "name": "Habanero", "cat": "Warm-Season Fruiting Crops"}, {"id": "BEC-GH", "name": "Bird’s Eye Chili", "cat": "Warm-Season Fruiting Crops"}, {"id": "BEL-GH", "name": "Bell Pepper", "cat": "Warm-Season Fruiting Crops"}, {"id": "AFE-GH", "name": "African Eggplant", "cat": "Warm-Season Fruiting Crops"}, {"id": "EGG-GH", "name": "Eggplant", "cat": "Warm-Season Fruiting Crops"}, {"id": "TOM-GH", "name": "Tomatoes", "cat": "Warm-Season Fruiting Crops"}, {"id": "CUC-GH", "name": "Cucumber", "cat": "Warm-Season Fruiting Crops"}, {"id": "OKR-GH", "name": "Okra", "cat": "Warm-Season Fruiting Crops"}, {"id": "LET-GH", "name": "Lettuce", "cat": "Leafy Greens"}, {"id": "KAL-GH", "name": "Kale", "cat": "Leafy Greens"}, {"id": "SPI-GH", "name": "Spinach", "cat": "Leafy Greens"}, {"id": "BRO-GH", "name": "Broccoli", "cat": "Brassica"}, {"id": "CAU-GH", "name": "Cauliflower", "cat": "Brassica"}, {"id": "CAB-GH", "name": "Cabbage", "cat": "Brassica"}, {"id": "COL-GH", "name": "Collard Greens", "cat": "Brassica"}, {"id": "AMG-GH", "name": "Amaranth Grain", "cat": "Grain Crops"}, {"id": "CPG-GH", "name": "Cowpea Grain", "cat": "Grain Crops"}, {"id": "CLV-GH", "name": "Clover", "cat": "Cover Crops"}, {"id": "RYE-GH", "name": "Rye", "cat": "Cover Crops"}, {"id": "VET-GH", "name": "Vetch", "cat": "Cover Crops"}, {"id": "PEP-GH", "name": "Peppers", "cat": "Warm-Season Fruiting Crops"}], "acts": [{"id": "ACT-001", "name": "Pull Plastic & Drip", "group": "Bed Preparation", "phase": "Pre-Planting", "count": false, "unit": null, "avail": false, "desc": "Seed row: activity already assigned in FIELD_LIVE_SESSION. Review and complete."}, {"id": "ACT-002", "name": "Substrate Preparation", "group": "Propagation & Nursery", "phase": "Propagation", "count": false, "unit": null, "avail": false, "desc": "Mix organic coir, peat and perlite and load into mechanical flat-fillers to prepare standard 1020 trays (Header House)."}, {"id": "ACT-003", "name": "Precision Mechanical Seeding", "group": "Propagation & Nursery", "phase": "Propagation", "count": true, "unit": "tray", "avail": false, "desc": "Pneumatic seeders place seed into 128-cell trays (brassicas, alliums, leafy greens) or 72-cell deep plug trays (vertical nightshades)."}, {"id": "ACT-004", "name": "Germination Chamber Loading", "group": "Propagation & Nursery", "phase": "Propagation", "count": true, "unit": "tray", "avail": false, "desc": "Move newly seeded trays into dark, high-humidity, heated germination racks."}, {"id": "ACT-005", "name": "Tray Consolidation", "group": "Propagation & Nursery", "phase": "Propagation", "count": true, "unit": "tray", "avail": false, "desc": "Walk 4-tier mobile racks under 18-hour LED toplights; remove non-viable sprouts and thin to one seedling per cell."}, {"id": "ACT-006", "name": "Hardening-Off Staging", "group": "Propagation & Nursery", "phase": "Propagation", "count": true, "unit": "tray", "avail": false, "desc": "Roll mobile racks to the transitional cooling zone near the main bay doors to thicken stems before transplant day."}, {"id": "ACT-007", "name": "Pre-Plant Flush & Sanitization", "group": "Pre-Planting & Planting", "phase": "Pre-Planting", "count": true, "unit": "bed", "avail": true, "desc": "Power-wash aluminum bench meshes or flush hanging gutter channels with organic peroxide solution immediately before loading a new wave."}, {"id": "ACT-008", "name": "Direct In-Ground Sowing (Bay 1)", "group": "Pre-Planting & Planting", "phase": "Planting", "count": true, "unit": "ft", "avail": true, "desc": "Walk-behind precision seeder down the 288 ft lines (GH-1-R03 to GH-1-R05) to direct-sow Carrots, Beets and Turnips."}, {"id": "ACT-009", "name": "Rolling Bench Plug Planting (Bays 2 & 3)", "group": "Pre-Planting & Planting", "phase": "Planting", "count": true, "unit": "tray", "avail": true, "desc": "Load carts with 128-cell plugs, push down the shifted 2.5 ft aisles and hand-press plugs into pre-punched bench media. Requires hardened-off plugs (ACT-006)."}, {"id": "ACT-010", "name": "High-Wire Gutter Block Dropping (Bay 4)", "group": "Pre-Planting & Planting", "phase": "Planting", "count": true, "unit": "plant", "avail": true, "desc": "Place mature 72-cell nightshade root blocks onto coir/rockwool slabs in gutters GH-4-G02 to GH-4-G05. Requires hardened-off plugs (ACT-006)."}, {"id": "ACT-011", "name": "Irrigation Stake Placement", "group": "Pre-Planting & Planting", "phase": "Planting", "count": true, "unit": "plant", "avail": false, "desc": "Hand-insert pressure-compensating drip emitters into the substrate base of each newly transplanted nightshade, grain and root crop."}, {"id": "ACT-012", "name": "Lateral Bench Shifting", "group": "Crop Maintenance", "phase": "Maintenance", "count": false, "unit": null, "avail": false, "desc": "Manually roll gear-driven aluminum benches sideways to close spent aisles and open fresh worker paths."}, {"id": "ACT-013", "name": "High-Wire Vine Trellising", "group": "Crop Maintenance", "phase": "Maintenance", "count": false, "unit": null, "avail": false, "desc": "Use electric scissor lifts down the 288 ft lines of Bay 4 to clip Tomatoes and Cucumbers onto overhead support cables at 19 ft."}, {"id": "ACT-014", "name": "High-Wire Pruning & Lowering", "group": "Crop Maintenance", "phase": "Maintenance", "count": false, "unit": null, "avail": false, "desc": "Pinch off non-productive suckers and slide support spools along truss cables to lower spent vine onto gutter frames."}, {"id": "ACT-015", "name": "In-Ground Row Hand-Weeding (Bay 1)", "group": "Crop Maintenance", "phase": "Maintenance", "count": false, "unit": null, "avail": false, "desc": "Hand-pull weeds near taproots along the heated dirt rows."}, {"id": "ACT-016", "name": "Under-Bench Floor Maintenance", "group": "Crop Maintenance", "phase": "Maintenance", "count": false, "unit": null, "avail": false, "desc": "Flame-weed or spot-cleanse the gravel perimeters beneath rolling benches to keep tracking pipes clear of weed seed and dust."}, {"id": "ACT-017", "name": "Cover Crop Management (Bay 4)", "group": "Crop Maintenance", "phase": "Maintenance", "count": false, "unit": null, "avail": false, "desc": "Trim and sweep back Clover, Rye and Vetch carpets under the permanent plantain lines (GH-4-G01)."}, {"id": "ACT-018", "name": "Biological Control Release", "group": "IPM & Calibration", "phase": "IPM & Calibration", "count": true, "unit": "each", "avail": false, "desc": "Hang paper breeding sachets of beneficial predatory insects (lacewings, phytoseiid mites) to control thrips and aphids."}, {"id": "ACT-019", "name": "Sticky Card Auditing", "group": "IPM & Calibration", "phase": "IPM & Calibration", "count": true, "unit": "card", "avail": false, "desc": "Check and change yellow and blue sticky cards at 30 ft intervals across all 4 bays; log pest pressure on farm tablets."}, {"id": "ACT-020", "name": "Dosing Computer Validation", "group": "IPM & Calibration", "phase": "IPM & Calibration", "count": true, "unit": "sample", "avail": false, "desc": "Extract water samples from gutter drainage ports and run manual EC and pH tests to confirm fertigation injection loops are calibrated."}, {"id": "ACT-021", "name": "Drip Line Purging", "group": "IPM & Calibration", "phase": "IPM & Calibration", "count": false, "unit": null, "avail": false, "desc": "Open terminal flush valves at the southern ends of the 288 ft rows to purge organic films, calcium scale and sediment."}, {"id": "ACT-022", "name": "Leafy Green Clear-Cutting (Bays 2 & 3)", "group": "Harvest & Post-Harvest", "phase": "Harvest", "count": true, "unit": "tote", "avail": true, "desc": "Clean-cut whole benches of Mchicha, Sukuma Wiki, Lettuce and Spinach at the crown line into sanitizable field totes."}, {"id": "ACT-023", "name": "High-Wire Hand-Picking (Bay 4)", "group": "Harvest & Post-Harvest", "phase": "Harvest", "count": true, "unit": "crate", "avail": true, "desc": "Hand-harvest mature Tomatoes, Chilies, Habaneros and Eggplants from gutter aisles into cradled transport crates."}, {"id": "ACT-024", "name": "Root Crop Extraction (Bay 1)", "group": "Harvest & Post-Harvest", "phase": "Harvest", "count": true, "unit": "tote", "avail": true, "desc": "Hand-pull or fork-lift Carrots, Beets and Turnips from the heated soil beds."}, {"id": "ACT-025", "name": "Field Heat Removal (Cold Chain Staging)", "group": "Harvest & Post-Harvest", "phase": "Post-Harvest", "count": true, "unit": "tote", "avail": true, "desc": "Wheel loaded harvest carts into the Header House 300 sq ft walk-in cooler and pull field heat down to 36°F (2.2°C)."}, {"id": "ACT-026", "name": "Crop Debris Clearing & Reset", "group": "Harvest & Post-Harvest", "phase": "Post-Harvest", "count": false, "unit": null, "avail": true, "desc": "Pull spent root plugs, vines or direct-seed stubble; dump biomass to compost and wipe down hardware to reset the bed for the next wave."}], "workers": [{"id": "usr-manager1", "name": "Chris Kenny", "role": "Manager"}, {"id": "usr-founder1", "name": "Kisanga", "role": "Founder"}, {"id": "lisa", "name": "Lisa Griffin", "role": "Worker"}, {"id": "james", "name": "James Clay", "role": "Worker"}, {"id": "jon", "name": "Jon Creem", "role": "Worker"}, {"id": "linda", "name": "Linda May", "role": "Worker"}, {"id": "jessica", "name": "Jessica Luka", "role": "Worker"}]};
-const DEMO_PIN='1234';
+const D={"beds": [{"id": "GH-1-R01", "bay": "GH-1", "n": 1, "len": 288, "type": "Heated In-Ground Soil Row 1"}, {"id": "GH-1-R02", "bay": "GH-1", "n": 2, "len": 288, "type": "Heated In-Ground Soil Row 2"}, {"id": "GH-1-R03", "bay": "GH-1", "n": 3, "len": 288, "type": "Heated In-Ground Soil Row 3"}, {"id": "GH-1-R04", "bay": "GH-1", "n": 4, "len": 288, "type": "Heated In-Ground Soil Row 4"}, {"id": "GH-1-R05", "bay": "GH-1", "n": 5, "len": 288, "type": "Heated In-Ground Soil Row 5"}, {"id": "GH-2-B01", "bay": "GH-2", "n": 1, "len": 288, "type": "Rolling Aluminum Bench 1"}, {"id": "GH-2-B02", "bay": "GH-2", "n": 2, "len": 288, "type": "Rolling Aluminum Bench 2"}, {"id": "GH-2-B03", "bay": "GH-2", "n": 3, "len": 288, "type": "Rolling Aluminum Bench 3"}, {"id": "GH-2-B04", "bay": "GH-2", "n": 4, "len": 288, "type": "Rolling Aluminum Bench 4"}, {"id": "GH-2-B05", "bay": "GH-2", "n": 5, "len": 288, "type": "Rolling Aluminum Bench 5"}, {"id": "GH-2-B06", "bay": "GH-2", "n": 6, "len": 288, "type": "Rolling Aluminum Bench 6"}, {"id": "GH-2-B07", "bay": "GH-2", "n": 7, "len": 288, "type": "Rolling Aluminum Bench 7"}, {"id": "GH-2-B08", "bay": "GH-2", "n": 8, "len": 288, "type": "Rolling Aluminum Bench 8"}, {"id": "GH-3-B01", "bay": "GH-3", "n": 1, "len": 288, "type": "Rolling Aluminum Bench 1"}, {"id": "GH-3-B02", "bay": "GH-3", "n": 2, "len": 288, "type": "Rolling Aluminum Bench 2"}, {"id": "GH-3-B03", "bay": "GH-3", "n": 3, "len": 288, "type": "Rolling Aluminum Bench 3"}, {"id": "GH-3-B04", "bay": "GH-3", "n": 4, "len": 288, "type": "Rolling Aluminum Bench 4"}, {"id": "GH-3-B05", "bay": "GH-3", "n": 5, "len": 288, "type": "Rolling Aluminum Bench 5"}, {"id": "GH-3-B06", "bay": "GH-3", "n": 6, "len": 288, "type": "Rolling Aluminum Bench 6"}, {"id": "GH-3-B07", "bay": "GH-3", "n": 7, "len": 288, "type": "Rolling Aluminum Bench 7"}, {"id": "GH-3-B08", "bay": "GH-3", "n": 8, "len": 288, "type": "Rolling Aluminum Bench 8"}, {"id": "GH-4-G01", "bay": "GH-4", "n": 1, "len": 288, "type": "Hanging Gutter Line 1"}, {"id": "GH-4-G02", "bay": "GH-4", "n": 2, "len": 288, "type": "Hanging Gutter Line 2"}, {"id": "GH-4-G03", "bay": "GH-4", "n": 3, "len": 288, "type": "Hanging Gutter Line 3"}, {"id": "GH-4-G04", "bay": "GH-4", "n": 4, "len": 288, "type": "Hanging Gutter Line 4"}, {"id": "GH-4-G05", "bay": "GH-4", "n": 5, "len": 288, "type": "Hanging Gutter Line 5"}], "bays": [{"id": "GH-1", "name": "Greenhouse Bay 1", "zone": "Cold Climate Zone", "type": "Heated In-Ground Soil Row 1", "count": 5}, {"id": "GH-2", "name": "Greenhouse Bay 2", "zone": "Temperate Commercial Canopy", "type": "Rolling Aluminum Bench 1", "count": 8}, {"id": "GH-3", "name": "Greenhouse Bay 3", "zone": "Indigenous Specialty Canopy", "type": "Rolling Aluminum Bench 1", "count": 8}, {"id": "GH-4", "name": "Greenhouse Bay 4", "zone": "Tropical High-Wire House", "type": "Hanging Gutter Line 1", "count": 5}], "acts": [{"id": "ACT-001", "name": "Pull Plastic & Drip", "group": "Bed Preparation", "phase": "Pre-Planting", "count": false, "unit": null, "avail": false, "desc": "Seed row: activity already assigned in FIELD_LIVE_SESSION. Review and complete."}, {"id": "ACT-002", "name": "Substrate Preparation", "group": "Propagation & Nursery", "phase": "Propagation", "count": false, "unit": null, "avail": false, "desc": "Mix organic coir, peat and perlite and load into mechanical flat-fillers to prepare standard 1020 trays (Header House)."}, {"id": "ACT-003", "name": "Precision Mechanical Seeding", "group": "Propagation & Nursery", "phase": "Propagation", "count": true, "unit": "tray", "avail": false, "desc": "Pneumatic seeders place seed into 128-cell trays (brassicas, alliums, leafy greens) or 72-cell deep plug trays (vertical nightshades)."}, {"id": "ACT-004", "name": "Germination Chamber Loading", "group": "Propagation & Nursery", "phase": "Propagation", "count": true, "unit": "tray", "avail": false, "desc": "Move newly seeded trays into dark, high-humidity, heated germination racks."}, {"id": "ACT-005", "name": "Tray Consolidation", "group": "Propagation & Nursery", "phase": "Propagation", "count": true, "unit": "tray", "avail": false, "desc": "Walk 4-tier mobile racks under 18-hour LED toplights; remove non-viable sprouts and thin to one seedling per cell."}, {"id": "ACT-006", "name": "Hardening-Off Staging", "group": "Propagation & Nursery", "phase": "Propagation", "count": true, "unit": "tray", "avail": false, "desc": "Roll mobile racks to the transitional cooling zone near the main bay doors to thicken stems before transplant day."}, {"id": "ACT-007", "name": "Pre-Plant Flush & Sanitization", "group": "Pre-Planting & Planting", "phase": "Pre-Planting", "count": true, "unit": "bed", "avail": true, "desc": "Power-wash aluminum bench meshes or flush hanging gutter channels with organic peroxide solution immediately before loading a new wave."}, {"id": "ACT-008", "name": "Direct In-Ground Sowing (Bay 1)", "group": "Pre-Planting & Planting", "phase": "Planting", "count": true, "unit": "ft", "avail": true, "desc": "Walk-behind precision seeder down the 288 ft lines (GH-1-R03 to GH-1-R05) to direct-sow Carrots, Beets and Turnips."}, {"id": "ACT-009", "name": "Rolling Bench Plug Planting (Bays 2 & 3)", "group": "Pre-Planting & Planting", "phase": "Planting", "count": true, "unit": "tray", "avail": true, "desc": "Load carts with 128-cell plugs, push down the shifted 2.5 ft aisles and hand-press plugs into pre-punched bench media. Requires hardened-off plugs (ACT-006)."}, {"id": "ACT-010", "name": "High-Wire Gutter Block Dropping (Bay 4)", "group": "Pre-Planting & Planting", "phase": "Planting", "count": true, "unit": "plant", "avail": true, "desc": "Place mature 72-cell nightshade root blocks onto coir/rockwool slabs in gutters GH-4-G02 to GH-4-G05. Requires hardened-off plugs (ACT-006)."}, {"id": "ACT-011", "name": "Irrigation Stake Placement", "group": "Pre-Planting & Planting", "phase": "Planting", "count": true, "unit": "plant", "avail": false, "desc": "Hand-insert pressure-compensating drip emitters into the substrate base of each newly transplanted nightshade, grain and root crop."}, {"id": "ACT-012", "name": "Lateral Bench Shifting", "group": "Crop Maintenance", "phase": "Maintenance", "count": false, "unit": null, "avail": false, "desc": "Manually roll gear-driven aluminum benches sideways to close spent aisles and open fresh worker paths."}, {"id": "ACT-013", "name": "High-Wire Vine Trellising", "group": "Crop Maintenance", "phase": "Maintenance", "count": false, "unit": null, "avail": false, "desc": "Use electric scissor lifts down the 288 ft lines of Bay 4 to clip Tomatoes and Cucumbers onto overhead support cables at 19 ft."}, {"id": "ACT-014", "name": "High-Wire Pruning & Lowering", "group": "Crop Maintenance", "phase": "Maintenance", "count": false, "unit": null, "avail": false, "desc": "Pinch off non-productive suckers and slide support spools along truss cables to lower spent vine onto gutter frames."}, {"id": "ACT-015", "name": "In-Ground Row Hand-Weeding (Bay 1)", "group": "Crop Maintenance", "phase": "Maintenance", "count": false, "unit": null, "avail": false, "desc": "Hand-pull weeds near taproots along the heated dirt rows."}, {"id": "ACT-016", "name": "Under-Bench Floor Maintenance", "group": "Crop Maintenance", "phase": "Maintenance", "count": false, "unit": null, "avail": false, "desc": "Flame-weed or spot-cleanse the gravel perimeters beneath rolling benches to keep tracking pipes clear of weed seed and dust."}, {"id": "ACT-017", "name": "Cover Crop Management (Bay 4)", "group": "Crop Maintenance", "phase": "Maintenance", "count": false, "unit": null, "avail": false, "desc": "Trim and sweep back Clover, Rye and Vetch carpets under the permanent plantain lines (GH-4-G01)."}, {"id": "ACT-018", "name": "Biological Control Release", "group": "IPM & Calibration", "phase": "IPM & Calibration", "count": true, "unit": "each", "avail": false, "desc": "Hang paper breeding sachets of beneficial predatory insects (lacewings, phytoseiid mites) to control thrips and aphids."}, {"id": "ACT-019", "name": "Sticky Card Auditing", "group": "IPM & Calibration", "phase": "IPM & Calibration", "count": true, "unit": "card", "avail": false, "desc": "Check and change yellow and blue sticky cards at 30 ft intervals across all 4 bays; log pest pressure on farm tablets."}, {"id": "ACT-020", "name": "Dosing Computer Validation", "group": "IPM & Calibration", "phase": "IPM & Calibration", "count": true, "unit": "sample", "avail": false, "desc": "Extract water samples from gutter drainage ports and run manual EC and pH tests to confirm fertigation injection loops are calibrated."}, {"id": "ACT-021", "name": "Drip Line Purging", "group": "IPM & Calibration", "phase": "IPM & Calibration", "count": false, "unit": null, "avail": false, "desc": "Open terminal flush valves at the southern ends of the 288 ft rows to purge organic films, calcium scale and sediment."}, {"id": "ACT-022", "name": "Leafy Green Clear-Cutting (Bays 2 & 3)", "group": "Harvest & Post-Harvest", "phase": "Harvest", "count": true, "unit": "tote", "avail": true, "desc": "Clean-cut whole benches of Mchicha, Sukuma Wiki, Lettuce and Spinach at the crown line into sanitizable field totes."}, {"id": "ACT-023", "name": "High-Wire Hand-Picking (Bay 4)", "group": "Harvest & Post-Harvest", "phase": "Harvest", "count": true, "unit": "crate", "avail": true, "desc": "Hand-harvest mature Tomatoes, Chilies, Habaneros and Eggplants from gutter aisles into cradled transport crates."}, {"id": "ACT-024", "name": "Root Crop Extraction (Bay 1)", "group": "Harvest & Post-Harvest", "phase": "Harvest", "count": true, "unit": "tote", "avail": true, "desc": "Hand-pull or fork-lift Carrots, Beets and Turnips from the heated soil beds."}, {"id": "ACT-025", "name": "Field Heat Removal (Cold Chain Staging)", "group": "Harvest & Post-Harvest", "phase": "Post-Harvest", "count": true, "unit": "tote", "avail": true, "desc": "Wheel loaded harvest carts into the Header House 300 sq ft walk-in cooler and pull field heat down to 36°F (2.2°C)."}, {"id": "ACT-026", "name": "Crop Debris Clearing & Reset", "group": "Harvest & Post-Harvest", "phase": "Post-Harvest", "count": false, "unit": null, "avail": true, "desc": "Pull spent root plugs, vines or direct-seed stubble; dump biomass to compost and wipe down hardware to reset the bed for the next wave."}]};
+const API_URL='https://script.google.com/macros/s/AKfycbxI5EoHK-uRAthC9-V6X1xkXaNvGJYuBmOyI4ox7xeNiTw6rmRPA6mWbw01wKzTbtw5Aw/exec';
 const PHASES=['Propagation','Pre-Planting','Planting','Maintenance','IPM & Calibration','Harvest','Post-Harvest'];
+// letters only, so the manager script's numeric SESS-000123 counter is not disturbed
+const newSid=()=>'SESS-'+Array.from({length:8},()=>String.fromCharCode(65+Math.floor(Math.random()*26))).join('');
+const phases=()=>PHASES.concat([...new Set(D.acts.map(a=>a.phase))].filter(p=>p&&!PHASES.includes(p)));
 const PAUSE=['Break','Lunch','End of Day','Equipment','Other'];
 const DOMAINS=['Pest','Disease','Nutrient','Irrigation / EC / pH','Climate','Plant condition','Weeds'];
 const SEV=['Low','Moderate','High','Critical'];
 const ISSUE_CATS=['Equipment failure','Safety concern','Blocked bed','Irrigation / fertigation','Climate control','Supplies'];
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const bedBy=id=>D.beds.find(b=>b.id===id), actBy=id=>D.acts.find(a=>a.id===id), cropBy=id=>D.crops.find(c=>c.id===id);
+const bedBy=id=>D.beds.find(b=>b.id===id), actBy=id=>D.acts.find(a=>a.id===id);
+const STAGE={PRE_PLANTING:'Planned',GROWING:'Growing',HARVEST_READY:'Ready to harvest',HARVEST_COMPLETE:'Harvest done'};
 const bayBy=id=>D.bays.find(b=>b.id===id);
 const KEY='ghw.v1';
-let S={user:null,sessions:[],cohorts:{},log:[],scouts:[],issues:[],outbox:0,seeded:{}};
+let S={user:null,sessions:[],cohorts:{},log:[],scouts:[],issues:[],seeded:{},token:null,queue:[],ref:null,lastUser:null};
 let ui={tab:'today',bay:'GH-1',bed:null,q:'',scout:null,issue:null,online:navigator.onLine};
 try{const raw=localStorage.getItem(KEY);if(raw)S=Object.assign(S,JSON.parse(raw))}catch(e){}
+if(S.ref)Object.assign(D,S.ref);
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 const bedType=b=>/Soil/.test(b.type)?'Soil row':/Bench/.test(b.type)?'Rolling bench':'Gutter line';
 const bedLabel=b=>b.id;
@@ -164,7 +173,7 @@ function loginView(){
   <form id="lf" class="sec" autocomplete="off">
    <div class="field"><label for="wid">Worker ID</label><input id="wid" type="text" autocapitalize="none" autocorrect="off" value="${esc(ui.wid||'')}" placeholder="e.g. lisa"></div>
    <div class="field"><label for="pin">PIN</label><input id="pin" type="password" inputmode="numeric" placeholder="4-digit PIN"></div>
-   <div id="lerr" class="tag bad" hidden></div>
+   <div id="lerr" class="tag bad" ${ui.loginMsg?'':'hidden'}>${esc(ui.loginMsg||'')}</div>
    <button class="btn pri" type="submit">Sign in</button></form>
   </div>`;
 }
@@ -182,7 +191,7 @@ function todayView(){
 }
 function taskCard(s){
   const a=actBy(s.actId),b=bedBy(s.bedId),paused=s.status==='PAUSED',coh=S.cohorts[s.bedId];
-  const crop=cropBy(s.cropId||coh?.cropId);
+  const crop=coh?{name:coh.crop}:null;
   return `<div class="task ${paused?'paused':''}"><div class="band"></div><div class="in">
    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="bedid">${esc(s.bedId)}</span><span class="tag ${paused?'mut':'sun'}">${paused?'Paused · '+esc(s.pauses[s.pauses.length-1].reason):'Running'}</span>${crop?`<span class="tag">${esc(crop.name)}</span>`:''}</div>
    <div><h2>${esc(a.name)}</h2>${a.desc?`<div class="muted" style="font-size:13px;margin-top:4px">${esc(a.desc)}</div>`:''}</div>
@@ -198,17 +207,17 @@ function bedsView(){
    <div class="muted" style="font-size:13px">Camera scanning is not available in this app. Type the code printed on the bed tag.</div></form>
   <section class="sec"><div class="lbl">Bays</div><div class="bays">${D.bays.map(b=>`<button class="bay" data-a="bay" data-id="${b.id}" aria-pressed="${b.id===ui.bay}"><b>${b.id}</b><span>${esc(b.zone)} · ${b.count} beds</span></button>`).join('')}</div></section>
   <section class="sec"><div class="row"><h2>${esc(bay.name)}</h2><span class="muted" style="font-size:13px">${esc(bay.type)}</span></div>
-   <div class="bedgrid">${beds.map(b=>{const c=S.cohorts[b.id];return `<button class="bedbtn ${c?'full':''}" data-a="openBed" data-id="${b.id}">${b.id.split('-').slice(2).join('')}<small>${c?esc(cropBy(c.cropId)?.name.split(' ')[0]||'Planted'):'Empty'}</small></button>`}).join('')}</div></section>`;
+   <div class="bedgrid">${beds.map(b=>{const c=S.cohorts[b.id];return `<button class="bedbtn ${c?'full':''}" data-a="openBed" data-id="${b.id}">${b.id.split('-').slice(2).join('')}<small>${c?esc(c.crop.split(' ')[0]):'Empty'}</small></button>`}).join('')}</div></section>`;
   return h;
 }
 function bedView(){
   const b=bedBy(ui.bed);if(!b){ui.tab='beds';return bedsView()}
-  const c=S.cohorts[b.id],crop=c&&cropBy(c.cropId),cur=live();
+  const c=S.cohorts[b.id],cur=live();
   const hist=S.log.filter(l=>l.bedId===b.id).slice(-6).reverse(), sc=S.scouts.filter(x=>x.bedId===b.id).slice(-3).reverse();
-  const days=c?Math.floor((Date.now()-c.dob)/864e5):0;
+  const days=c&&c.planted?Math.floor((Date.now()-Date.parse(c.dob))/864e5):0;
   return `<button class="btn ghost sm" data-a="tab" data-id="beds" style="align-self:flex-start">← Beds</button>
   <div><div class="eyebrow">${esc(bayBy(b.bay).name)} · ${esc(bayBy(b.bay).zone)}</div><h1 class="mono" style="font-family:var(--f-mono)">${b.id}</h1></div>
-  <div class="card"><dl class="kv"><dt>Type</dt><dd>${bedType(b)}</dd><dt>Length</dt><dd>${b.len} ft</dd><dt>Crop</dt><dd>${crop?esc(crop.name):'<span class="tag mut">Empty</span>'}</dd>${c?`<dt>Cohort</dt><dd class="mono">${esc(c.id)}</dd><dt>Planted</dt><dd>${new Date(c.dob).toLocaleDateString()} · day ${days}</dd>`:''}</dl>
+  <div class="card"><dl class="kv"><dt>Type</dt><dd>${bedType(b)}</dd><dt>Length</dt><dd>${b.len} ft</dd><dt>Crop</dt><dd>${c?esc(c.crop)+' <span class="tag '+(c.stage==='HARVEST_READY'?'sun':'')+'">'+(STAGE[c.stage]||c.stage)+'</span>':'<span class="tag mut">Empty</span>'}</dd>${c?`<dt>Cohort</dt><dd class="mono">${esc(c.id)}</dd><dt>${c.planted?'Planted':'Planned'}</dt><dd>${esc(c.dob)}${c.planted?' · day '+days:''}</dd>${c.stage==='PRE_PLANTING'?`<dt>Bed</dt><dd>${c.ver?'<span class="tag">Verified ready</span>':'<span class="tag mut">Waiting for manager check</span>'}</dd>`:''}`:''}</dl>
   </div>
   <div class="btns"><button class="btn pri" data-a="startHere" data-id="${b.id}" ${cur?'disabled':''}>Start task here</button><button class="btn" data-a="scoutHere" data-id="${b.id}">Scout</button></div>
   ${cur?'<div class="muted" style="font-size:13px">A task is already in progress.</div>':''}
@@ -242,12 +251,15 @@ function recent(arr,t,s){const r=arr.filter(x=>x.workerId===S.user.id).slice(-3)
 
 /* ---------- render ---------- */
 function connPill(){
-  const off=!ui.online;
-  return `<button class="pill ${off?'off':''}" data-a="conn"><i></i>${off?'Offline':'Demo'}${S.outbox?' · '+S.outbox+' queued':''}</button>`;
+  const q=S.user?S.queue.filter(x=>x.u===S.user.id).length:0;
+  if(!ui.online)return `<button class="pill off" data-a="conn"><i></i>Offline${q?' · '+q+' to sync':''}</button>`;
+  if(q)return `<button class="pill" data-a="conn"><i></i>${q} to sync</button>`;
+  return `<button class="pill on" data-a="conn"><i></i>Live</button>`;
 }
+function paintTop(){const logged=!!S.user;$('#top').innerHTML=logged?`<div class="brand">GH Worker App<small>${esc(S.user.name)} · ${esc(S.user.role)}</small></div>${connPill()}<button class="pill" data-a="logout">Sign out</button>`:`<div class="brand">GH Worker App</div>${connPill()}`;}
 function render(){
   const logged=!!S.user;
-  $('#top').innerHTML=logged?`<div class="brand">GH Worker App<small>${esc(S.user.name)} · ${esc(S.user.role)}</small></div>${connPill()}<button class="pill" data-a="logout">Sign out</button>`:`<div class="brand">GH Worker App</div>${connPill()}`;
+  paintTop();
   $('#dock').hidden=!logged;
   if(!logged){$('#app').innerHTML=loginView();return}
   const v=ui.tab==='today'?todayView():ui.tab==='beds'?(ui.bed?bedView():bedsView()):ui.tab==='scout'?scoutView():issueView();
@@ -257,7 +269,7 @@ function render(){
   $('#tabs').innerHTML=[['today','Today'],['beds','Beds'],['scout','Scout'],['issue','Report']].map(([k,l])=>`<button data-a="tab" data-id="${k}" ${ui.tab===k?'aria-current="page"':''}>${ICON[k==='issue'?'issue':k]}${l}</button>`).join('');
 }
 setInterval(()=>{const now=Date.now();document.querySelectorAll('[data-timer]').forEach(el=>{const s=S.sessions.find(x=>x.id===el.dataset.timer);if(s)el.textContent=fmt(elapsed(s,now))})},1000);
-addEventListener('online',()=>{ui.online=true;render()});addEventListener('offline',()=>{ui.online=false;render()});
+addEventListener('online',()=>{ui.online=true;paintTop();pull()});addEventListener('offline',()=>{ui.online=false;paintTop()});
 
 /* ---------- task flow ---------- */
 function activitySheet(bedId){
@@ -269,29 +281,15 @@ function drawActs(){
   const keep=document.getElementById('aq');const had=keep&&document.activeElement===keep;
   openSheet(`<div class="hd"><div><div class="eyebrow">Start a task on</div><h2 class="mono" style="font-family:var(--f-mono)">${sh.bedId}</h2></div><button class="btn ghost sm" data-a="close">Cancel</button></div>
    <input id="aq" type="text" placeholder="Search activities" value="${esc(sh.q||'')}">
-   ${PHASES.map(p=>{const xs=list.filter(a=>a.phase===p);return xs.length?`<div class="sec"><div class="eyebrow">${p}</div><div class="list">${xs.map(a=>`<button class="item" data-a="pickAct" data-id="${a.id}"><div class="grow"><div class="t">${esc(a.name)}</div><div class="s">${esc(a.group)}</div></div></button>`).join('')}</div></div>`:''}).join('')||'<div class="empty">No matching activity.</div>'}`);
+   ${phases().map(p=>{const xs=list.filter(a=>a.phase===p);return xs.length?`<div class="sec"><div class="eyebrow">${p}</div><div class="list">${xs.map(a=>`<button class="item" data-a="pickAct" data-id="${a.id}"><div class="grow"><div class="t">${esc(a.name)}</div><div class="s">${esc(a.group)}</div></div></button>`).join('')}</div></div>`:''}).join('')||'<div class="empty">No matching activity.</div>'}`);
   if(had){const e=document.getElementById('aq');e.focus();e.setSelectionRange(e.value.length,e.value.length)}
 }
-function begin(s){
-  const a=actBy(s.actId);
-  if(a.phase==='Planting'&&!S.cohorts[s.bedId]&&!s.cropId){
-    sh={sid:s.id,q:''};cropSheet();return}
-  activate(s);
-}
-function cropSheet(){
-  const s=S.sessions.find(x=>x.id===sh.sid),q=(sh.q||'').toLowerCase();
-  const cats=[...new Set(D.crops.map(c=>c.cat))];
-  const list=D.crops.filter(c=>!q||c.name.toLowerCase().includes(q));
-  const had=document.activeElement&&document.activeElement.id==='cq';
-  openSheet(`<div class="hd"><div><div class="eyebrow">${esc(s.bedId)} has no crop yet</div><h2>What are you planting?</h2></div><button class="btn ghost sm" data-a="close">Cancel</button></div>
-   <input id="cq" type="text" placeholder="Search crops" value="${esc(sh.q||'')}">
-   ${cats.map(c=>{const xs=list.filter(x=>x.cat===c);return xs.length?`<div class="sec"><div class="eyebrow">${esc(c)}</div><div class="chips">${xs.map(x=>`<button class="chip" data-a="pickCrop" data-id="${x.id}">${esc(x.name)}</button>`).join('')}</div></div>`:''}).join('')||'<div class="empty">No matching crop.</div>'}`);
-  if(had){const e=document.getElementById('cq');e.focus();e.setSelectionRange(e.value.length,e.value.length)}
-}
+function begin(s){activate(s)}
 function activate(s){
   s.status='ACTIVE';s.startAt=Date.now();s.pauses=[];s.workerId=S.user.id;
   if(!S.sessions.includes(s))S.sessions.push(s);
-  save();closeSheet();ui.tab='today';ui.bed=null;render();toast('Task started');
+  enqueue('wStart',{sessionId:s.id,bedId:s.bedId,actName:actBy(s.actId).name,startAt:s.startAt});
+  closeSheet();ui.tab='today';ui.bed=null;render();toast('Task started');
 }
 function completeSheet(){
   const s=live(),a=actBy(s.actId);
@@ -325,11 +323,9 @@ function finish(){
     n=sh.totes.reduce((t,x)=>t+x.lb,0);qty=sh.totes.length+' totes · '+n.toFixed(1)+' lb';s.totes=sh.totes}
   else if(a.count){const v=parseFloat(sh.qty);if(!(v>=0)||sh.qty===''){toast('Enter a quantity');return}n=v;qty=v+' '+unit}
   s.status='DONE';s.endAt=Date.now();s.qty=n;s.unit=sh.tote?'lb':unit;s.qtyText=qty;s.flag=sh.flag;s.note=sh.note;
-  const coh=S.cohorts[s.bedId];
-  if(a.phase==='Planting'&&!coh&&s.cropId){S.cohorts[s.bedId]={id:s.cropId+'-'+new Date().toISOString().slice(0,10),cropId:s.cropId,wave:'W01',dob:Date.now()}}
-  if(a.id==='ACT-026')delete S.cohorts[s.bedId];
   S.log.push({id:'LOG-'+Date.now(),sid:s.id,bedId:s.bedId,act:a.name,worker:S.user.name,end:s.endAt,min:Math.round(elapsed(s)/60000),qty,flag:sh.flag});
-  S.outbox++;save();closeSheet();render();toast('Task completed and saved');
+  enqueue('wComplete',{sessionId:s.id,startAt:s.startAt,endAt:s.endAt,qty:sh.tote?s.totes.length:n,unit:sh.tote?(a.unit||'tote'):unit,flag:!!sh.flag,note:sh.note||'',totes:s.totes||[]});
+  closeSheet();render();toast('Task completed');
 }
 
 /* ---------- events ---------- */
@@ -338,18 +334,20 @@ document.addEventListener('click',e=>{
   const a=t.dataset.a,id=t.dataset.id;
   switch(a){
    case'fillw':ui.wid=id;$('#wid').value=id;$('#pin').focus();break;
-   case'tab':ui.tab=id;if(id!=='beds')ui.bed=null;if(id==='beds'&&t.closest('#app'))ui.bed=null;render();scrollTo(0,0);break;
+   case'tab':ui.tab=id;ui.bed=null;render();scrollTo(0,0);break;
    case'bay':ui.bay=id;render();break;
    case'openBed':ui.bed=id;render();scrollTo(0,0);break;
    case'newTask':ui.tab='beds';ui.bed=null;render();toast('Pick the bed you are working on');break;
    case'startHere':activitySheet(id);break;
    case'scoutHere':ui.scout={bed:id,domains:[],sev:0,note:'',photo:null};ui.tab='scout';render();break;
-   case'pickAct':{const s={id:'SESS-L'+Date.now(),workerId:S.user.id,managerId:'usr-manager1',bedId:sh.bedId,actId:id,status:'ASSIGNED',pauses:[]};S.sessions.push(s);begin(s);break}
+   case'pickAct':{const A=actBy(id),C=S.cohorts[sh.bedId];
+     if(A.phase==='Planting'&&!C){toast('Planting needs a cohort planned on this bed');break}
+     if(A.phase==='Harvest'&&!(C&&C.stage==='HARVEST_READY')){toast('Harvest needs the crop verified mature by a manager');break}
+     const s={id:newSid(),workerId:S.user.id,managerId:'',bedId:sh.bedId,actId:id,status:'ASSIGNED',pauses:[]};S.sessions.push(s);begin(s);break}
    case'startAssigned':{if(live()){toast('Finish the task in progress first');break}begin(S.sessions.find(x=>x.id===id));break}
-   case'pickCrop':{const s=S.sessions.find(x=>x.id===sh.sid);s.cropId=id;activate(s);break}
    case'pause':openSheet(`<div class="hd"><h2>Why are you pausing?</h2><button class="btn ghost sm" data-a="close">Cancel</button></div><div class="list">${PAUSE.map(r=>`<button class="item" data-a="doPause" data-id="${r}"><div class="t">${r}</div></button>`).join('')}</div>`);break;
-   case'doPause':{const s=live();s.status='PAUSED';s.pauses.push({at:Date.now(),reason:id});save();closeSheet();render();toast('Paused: '+id);break}
-   case'resume':{const s=live();const p=s.pauses[s.pauses.length-1];p.resumedAt=Date.now();s.status='ACTIVE';save();render();break}
+   case'doPause':{const s=live(),at=Date.now();s.status='PAUSED';s.pauses.push({at,reason:id});enqueue('wPause',{sessionId:s.id,reason:id,at});closeSheet();render();toast('Paused: '+id);break}
+   case'resume':{const s=live(),p=s.pauses[s.pauses.length-1];p.resumedAt=Date.now();s.status='ACTIVE';enqueue('wResume',{sessionId:s.id,at:p.resumedAt});render();break}
    case'complete':completeSheet();break;
    case'toteAdd':{const v=parseFloat($('#tw').value);if(!(v>0)){toast('Enter the tote weight');break}sh.note=$('#cn').value;sh.totes.push({lb:v,at:Date.now()});drawComplete();$('#tw').focus();break}
    case'toteDel':sh.note=$('#cn').value;sh.totes.splice(+id,1);drawComplete();break;
@@ -362,21 +360,26 @@ document.addEventListener('click',e=>{
    case'ask':ui.issue.ask=!ui.issue.ask;render();break;
    case'submitScout':{const d=ui.scout;if(!d.bed||!d.domains.length||!d.sev){toast('Choose a bed, a problem type and a severity');break}
      S.scouts.push({id:'SCT-'+Date.now(),workerId:S.user.id,bedId:d.bed,cohortId:S.cohorts[d.bed]?.id||null,domains:d.domains,sev:d.sev,note:d.note,photo:d.photo,at:Date.now()});
-     S.outbox++;save();ui.scout=null;render();toast('Finding saved');break}
+     {const o=S.scouts[S.scouts.length-1];enqueue('wScout',{id:o.id,bedId:o.bedId,domains:o.domains,sev:o.sev,note:o.note,photo:o.photo,at:o.at})}
+     ui.scout=null;render();toast('Finding saved');break}
    case'submitIssue':{const d=ui.issue;if(!d.cat||!d.note.trim()){toast('Choose a category and describe the problem');break}
      S.issues.push({id:'ISS-'+Date.now(),workerId:S.user.id,bedId:d.bed||null,cat:d.cat,note:d.note,ask:d.ask,at:Date.now()});
-     S.outbox++;save();ui.issue=null;render();toast(d.ask?'Sent. A manager has been asked to step in':'Report saved');break}
-   case'conn':toast(ui.online?'Demo mode: data is kept on this device only':'Offline: changes are kept on this device');break;
-   case'logout':if(live()){toast('Complete or finish your task before signing out');break}S.user=null;ui={...ui,tab:'today',bed:null};save();render();break;
+     {const o=S.issues[S.issues.length-1];enqueue('wIssue',{id:o.id,bedId:o.bedId,cat:o.cat,note:o.note,ask:o.ask,at:o.at})}
+     ui.issue=null;render();toast(d.ask?'Sent. A manager has been asked to step in':'Report saved');break}
+   case'conn':{const q=S.queue.filter(x=>x.u===S.user?.id).length;toast(!ui.online?'Offline. '+(q?q+' change(s) will sync when you are back online':'Changes will sync when you are back online'):q?'Syncing '+q+' change(s)':'Connected to the ranch workbook');pull(true);break}
+   case'logout':{if(live()){toast('Complete or finish your task before signing out');break}if(S.queue.some(x=>x.u===S.user.id)){toast('Some changes have not synced yet. Connect to the internet first.');break}api('wLogout');S.user=null;S.token=null;ui={...ui,tab:'today',bed:null,loginMsg:''};save();render();break}
   }
 });
-document.addEventListener('submit',e=>{
+document.addEventListener('submit',async e=>{
   e.preventDefault();
   if(e.target.id==='lf'){
-    const id=$('#wid').value.trim().toLowerCase(),pin=$('#pin').value.trim(),w=D.workers.find(x=>x.id===id);
-    const er=$('#lerr');
-    if(!w||pin!==DEMO_PIN){er.textContent='Worker ID or PIN not recognised.';er.hidden=false;return}
-    S.user=w;save();ui.tab='today';render();
+    const id=$('#wid').value.trim().toLowerCase(),pin=$('#pin').value.trim(),er=$('#lerr'),btn=e.target.querySelector('button[type=submit]');
+    if(!id||!pin){er.textContent='Enter your Worker ID and PIN.';er.hidden=false;return}
+    btn.disabled=true;btn.textContent='Signing in…';er.hidden=true;
+    const r=await api('workerLogin',{user:id,pin});
+    if(!r.ok){er.textContent=r.code==='NET'?'Cannot reach the server. Check your connection and try again.':r.error;er.hidden=false;btn.disabled=false;btn.textContent='Sign in';return}
+    if(S.lastUser&&S.lastUser!==r.user.id){const keep=new Set(S.queue.map(q=>q.p.sessionId));S.sessions=S.sessions.filter(x=>keep.has(x.id));S.cohorts={};}
+    S.token=r.token;S.user=r.user;S.lastUser=r.user.id;ui.loginMsg='';ui.online=true;ui.tab='today';save();render();pull();
   }
   if(e.target.id==='qf'){
     const raw=$('#qr').value.toUpperCase().replace(/\s/g,''),m=raw.match(/^GH-?(\d)-?([RBG])-?(\d{1,2})$/);
@@ -388,7 +391,6 @@ document.addEventListener('submit',e=>{
 document.addEventListener('input',e=>{
   const i=e.target.id;
   if(i==='aq'){sh.q=e.target.value;drawActs()}
-  else if(i==='cq'){sh.q=e.target.value;cropSheet()}
   else if(i==='sc-note')ui.scout.note=e.target.value;
   else if(i==='is-note')ui.issue.note=e.target.value;
   else if(i==='wid')ui.wid=e.target.value;
@@ -402,7 +404,62 @@ document.addEventListener('change',e=>{
     r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,480/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);ui.scout.photo=c.toDataURL('image/jpeg',.7);render()};im.src=r.result};r.readAsDataURL(f);
   }
 });
-render();
+/* ---------- server link (Apps Script web app on the VPOS-GH workbook) ---------- */
+async function api(action,payload={}){
+  const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),25000);
+  try{
+    const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},signal:ctl.signal,
+      body:JSON.stringify(Object.assign({action,token:S.token,device:navigator.userAgent},payload))});
+    const j=await r.json();if(j&&!j.ok&&j.error==='Session expired')j.code='AUTH';return j;
+  }catch(e){return{ok:false,code:'NET',error:'Cannot reach the server.'}}
+  finally{clearTimeout(to)}
+}
+function enqueue(k,p){S.queue.push({k,u:S.user.id,p,t:Date.now()});save();paintTop();flush()}
+function softRender(){const a=document.activeElement;if(!$('#sheet').hidden||(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)))paintTop();else render()}
+function expire(){S.token=null;S.user=null;ui.loginMsg='Your session expired. Sign in again to finish syncing.';save();render()}
+let flushing=false;
+async function flush(){
+  if(flushing||!S.token||!S.user)return;flushing=true;
+  try{
+    for(;;){
+      const i=S.queue.findIndex(q=>q.u===S.user.id);if(i<0)break;
+      const q=S.queue[i],r=await api(q.k,q.p);
+      if(r.ok){S.queue.splice(i,1);save();ui.online=true;continue}
+      if(r.code==='NET'){ui.online=false;break}
+      if(r.code==='AUTH'){expire();break}
+      S.queue.splice(i,1);if(q.k==='wStart')S.sessions=S.sessions.filter(x=>x.id!==q.p.sessionId);save();toast('Not saved: '+r.error);pull();
+    }
+  }finally{flushing=false;if(S.user)softRender()}
+}
+function actIdByName(n){
+  const k=String(n||'').trim().toLowerCase(),a=D.acts.find(x=>x.name.toLowerCase()===k);if(a)return a.id;
+  const id='X-'+k.replace(/\W+/g,'-');D.acts.push({id,name:String(n),group:'Other',phase:'Maintenance',count:false,unit:'',avail:false,desc:''});return id;
+}
+function applySync(r){
+  D.beds=r.beds;D.bays=r.bays;if(r.acts.length)D.acts=r.acts;
+  S.ref={beds:D.beds,bays:D.bays,acts:D.acts};
+  if(!D.bays.find(b=>b.id===ui.bay)&&D.bays[0])ui.bay=D.bays[0].id;
+  const pend=new Set(S.queue.map(q=>q.p.sessionId).filter(Boolean)),pid=new Set(S.queue.map(q=>q.p.id).filter(Boolean));
+  const fresh=r.sessions.filter(x=>!pend.has(x.id)&&x.startAt!==null||x.status==='ASSIGNED'&&!pend.has(x.id)).map(x=>({id:x.id,workerId:x.workerId,managerId:x.managerId,bedId:x.bedId,actId:actIdByName(x.actName),status:x.status,startAt:x.startAt,endAt:x.endAt,pauses:x.pauses,cropId:x.cropId||undefined,qtyText:x.qtyText}));
+  S.sessions=fresh.concat(S.sessions.filter(x=>pend.has(x.id)));
+  S.cohorts=r.cohorts;S.log=r.log;
+  S.scouts=r.scouts.concat(S.scouts.filter(x=>pid.has(x.id)));
+  S.issues=r.issues.concat(S.issues.filter(x=>pid.has(x.id)));
+}
+async function pull(){
+  if(!S.token||!S.user)return;
+  await flush();
+  if(!S.user||S.queue.some(q=>q.u===S.user.id))return;
+  const r=await api('wSync');
+  if(r.ok){ui.online=true;applySync(r);save();softRender()}
+  else if(r.code==='AUTH')expire();
+  else if(r.code==='NET'){ui.online=false;paintTop()}
+  else toast('Could not load the workbook: '+r.error);
+}
+setInterval(()=>{if(!document.hidden)pull()},60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)pull()});
+
+render();if(S.token&&S.user)pull();
 </script>
 
-</body></html>
+</html>
