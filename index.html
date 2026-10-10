@@ -134,20 +134,10 @@ try{const raw=localStorage.getItem(KEY);if(raw)S=Object.assign(S,JSON.parse(raw)
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 const bedType=b=>/Soil/.test(b.type)?'Soil row':/Bench/.test(b.type)?'Rolling bench':'Gutter line';
 const bedLabel=b=>b.id;
-function seedCohorts(){
-  if(Object.keys(S.cohorts).length||S.cohortsSeeded)return;
-  const mk=(bed,crop,wave,days)=>S.cohorts[bed]={id:crop+'-'+wave,cropId:crop,wave,dob:Date.now()-days*864e5,demo:true};
-  mk('GH-1-R03','CAR-GH','W01',48);mk('GH-2-B01','LET-GH','W02',31);mk('GH-2-B02','SPI-GH','W02',29);
-  mk('GH-3-B01','MCH-GH','W01',27);mk('GH-4-G02','TOM-GH','W01',88);mk('GH-4-G03','AFE-GH','W01',74);
-  S.cohortsSeeded=true;
-}
-function seedSessions(){
-  const u=S.user.id;if(S.seeded[u])return;S.seeded[u]=true;
-  const mk=(bed,act,n)=>S.sessions.push({id:'SESS-D'+u.slice(0,3)+n,workerId:u,managerId:'usr-manager1',bedId:bed,actId:act,status:'ASSIGNED',pauses:[],demo:true});
-  if(u==='lisa'){mk('GH-4-G02','ACT-001',1);mk('GH-4-G02','ACT-001',2)}
-  mk('GH-2-B01','ACT-019',3);mk('GH-2-B02','ACT-022',4);mk('GH-1-R04','ACT-008',5);
-}
-seedCohorts();
+// Clear any example data saved by earlier versions of this app
+S.sessions=S.sessions.filter(s=>!s.demo);
+Object.keys(S.cohorts).forEach(k=>{if(S.cohorts[k].demo)delete S.cohorts[k]});
+S.seeded={};S.cohortsSeeded=false;
 
 /* ---------- time ---------- */
 const fmt=ms=>{ms=Math.max(0,Math.floor(ms/1000));const h=Math.floor(ms/3600),m=Math.floor(ms%3600/60),s=ms%60;return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')};
@@ -219,7 +209,7 @@ function bedView(){
   return `<button class="btn ghost sm" data-a="tab" data-id="beds" style="align-self:flex-start">← Beds</button>
   <div><div class="eyebrow">${esc(bayBy(b.bay).name)} · ${esc(bayBy(b.bay).zone)}</div><h1 class="mono" style="font-family:var(--f-mono)">${b.id}</h1></div>
   <div class="card"><dl class="kv"><dt>Type</dt><dd>${bedType(b)}</dd><dt>Length</dt><dd>${b.len} ft</dd><dt>Crop</dt><dd>${crop?esc(crop.name):'<span class="tag mut">Empty</span>'}</dd>${c?`<dt>Cohort</dt><dd class="mono">${esc(c.id)}</dd><dt>Planted</dt><dd>${new Date(c.dob).toLocaleDateString()} · day ${days}</dd>`:''}</dl>
-  ${c?.demo?'<div class="muted" style="font-size:12px">Example cohort for demo.</div>':''}</div>
+  </div>
   <div class="btns"><button class="btn pri" data-a="startHere" data-id="${b.id}" ${cur?'disabled':''}>Start task here</button><button class="btn" data-a="scoutHere" data-id="${b.id}">Scout</button></div>
   ${cur?'<div class="muted" style="font-size:13px">A task is already in progress.</div>':''}
   <section class="sec"><h2>Recent work</h2>${hist.length?`<div class="list">${hist.map(l=>`<div class="item"><div class="grow"><div class="t">${esc(l.act)}</div><div class="s">${esc(l.worker)} · ${new Date(l.end).toLocaleDateString()} · ${l.min} min${l.qty?' · '+esc(l.qty):''}</div></div></div>`).join('')}</div>`:'<div class="empty">No work logged on this bed yet.</div>'}</section>
@@ -386,7 +376,7 @@ document.addEventListener('submit',e=>{
     const id=$('#wid').value.trim().toLowerCase(),pin=$('#pin').value.trim(),w=D.workers.find(x=>x.id===id);
     const er=$('#lerr');
     if(!w||pin!==DEMO_PIN){er.textContent='Worker ID or PIN not recognised.';er.hidden=false;return}
-    S.user=w;seedSessions();save();ui.tab='today';render();
+    S.user=w;save();ui.tab='today';render();
   }
   if(e.target.id==='qf'){
     const raw=$('#qr').value.toUpperCase().replace(/\s/g,''),m=raw.match(/^GH-?(\d)-?([RBG])-?(\d{1,2})$/);
