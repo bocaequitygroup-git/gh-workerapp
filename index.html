@@ -51,6 +51,11 @@ h1{font-size:26px;line-height:1.1} h2{font-size:18px} h3{font-size:16px}
 .item .grow{flex:1;min-width:0}
 .item .t{font-weight:600;overflow-wrap:anywhere}
 .item .s{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.desc{font-size:13px;color:var(--ink);opacity:.85;margin-top:4px;line-height:1.4;overflow-wrap:anywhere}
+.ra{margin-top:6px;font-size:13px;line-height:1.4;background:var(--sun-soft);color:var(--ink);border-radius:8px;padding:6px 9px;overflow-wrap:anywhere}
+.ra b{color:var(--sun)} .ra .ranote{font-style:italic;color:var(--muted);margin-top:2px}
+.chk{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600}
+.chk input{width:22px;height:22px;flex:none}
 button.item:active{background:var(--surface2)}
 .btn{min-height:52px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-weight:700;padding:0 18px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
 .btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
@@ -139,18 +144,55 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const bedBy=id=>D.beds.find(b=>b.id===id), actBy=id=>D.acts.find(a=>a.id===id);
 const STAGE={PRE_PLANTING:'Planned',GROWING:'Growing',HARVEST_READY:'Ready to harvest',HARVEST_COMPLETE:'Harvest done'};
 const bayBy=id=>D.bays.find(b=>b.id===id);
-const KEY='ghw.v1';
-let S={user:null,sessions:[],cohorts:{},log:[],scouts:[],issues:[],seeded:{},token:null,queue:[],ref:null,lastUser:null};
-let ui={tab:'today',bay:'GH-1',bed:null,q:'',scout:null,issue:null,online:navigator.onLine};
-try{const raw=localStorage.getItem(KEY);if(raw)S=Object.assign(S,JSON.parse(raw))}catch(e){}
-if(S.ref)Object.assign(D,S.ref);
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+/* ---------- storage ----------
+   Sign-in is kept per TAB (sessionStorage): two tabs can be signed in as two different workers at the same time,
+   and signing out in one tab never touches the other. Each worker's offline data and unsynced queue live under
+   their own key (ghw.v2.<id>) so accounts never overwrite each other.
+   "Keep me signed in on this device" also stores the sign-in in localStorage, so a closed tab reopens signed in. */
+const AUTH='ghw.auth', DKEY=id=>'ghw.v2.'+id;
+let S={user:null,token:null,sessions:[],cohorts:{},log:[],scouts:[],issues:[],handed:[],queue:[],ref:null,seeded:{}};
+let ui={tab:'today',bay:'GH-1',bed:null,q:'',scout:null,issue:null,online:navigator.onLine,remember:false};
+function readAuth(){
+  try{const a=JSON.parse(sessionStorage.getItem(AUTH)||'null');if(a&&a.token&&a.user)return a}catch(e){}
+  try{const a=JSON.parse(localStorage.getItem(AUTH)||'null');if(a&&a.token&&a.user)return a}catch(e){}
+  return null;
+}
+function writeAuth(keep){
+  const a=JSON.stringify({token:S.token,user:S.user});
+  try{sessionStorage.setItem(AUTH,a)}catch(e){}
+  if(keep){try{localStorage.setItem(AUTH,a)}catch(e){}}
+}
+function clearAuth(){
+  try{sessionStorage.removeItem(AUTH)}catch(e){}
+  try{const a=JSON.parse(localStorage.getItem(AUTH)||'null');if(a&&a.token===S.token)localStorage.removeItem(AUTH)}catch(e){}
+}
+function loadData(id){
+  let d={};try{d=JSON.parse(localStorage.getItem(DKEY(id))||'{}')||{}}catch(e){}
+  S.sessions=(d.sessions||[]).filter(s=>!s.demo);S.cohorts=d.cohorts||{};S.log=d.log||[];S.scouts=d.scouts||[];S.issues=d.issues||[];
+  S.handed=d.handed||[];S.queue=d.queue||[];S.ref=d.ref||null;
+  if(S.ref)Object.assign(D,S.ref);
+}
+function save(){
+  if(!S.user)return;
+  try{localStorage.setItem(DKEY(S.user.id),JSON.stringify({sessions:S.sessions,cohorts:S.cohorts,log:S.log,scouts:S.scouts,issues:S.issues,handed:S.handed,queue:S.queue,ref:S.ref}))}catch(e){}
+}
+// One-time move of unsynced work saved by the older single-account version (ghw.v1) into each worker's own store.
+(function migrateV1(){
+  try{
+    const raw=localStorage.getItem('ghw.v1');if(!raw)return;
+    const o=JSON.parse(raw),by={};
+    (o.queue||[]).forEach(q=>{(by[q.u]=by[q.u]||[]).push(q)});
+    Object.keys(by).forEach(u=>{
+      const k=DKEY(u);if(localStorage.getItem(k))return;
+      const sid=new Set(by[u].map(q=>q.p&&q.p.sessionId).filter(Boolean)),pid=new Set(by[u].map(q=>q.p&&q.p.id).filter(Boolean));
+      localStorage.setItem(k,JSON.stringify({queue:by[u],sessions:(o.sessions||[]).filter(s=>sid.has(s.id)),scouts:(o.scouts||[]).filter(s=>pid.has(s.id)),issues:(o.issues||[]).filter(s=>pid.has(s.id))}));
+    });
+    localStorage.removeItem('ghw.v1');
+  }catch(e){}
+})();
+{const a=readAuth();if(a){S.user=a.user;S.token=a.token;loadData(a.user.id);try{sessionStorage.setItem(AUTH,JSON.stringify(a))}catch(e){}}}
 const bedType=b=>/Soil/.test(b.type)?'Soil row':/Bench/.test(b.type)?'Rolling bench':'Gutter line';
 const bedLabel=b=>b.id;
-// Clear any example data saved by earlier versions of this app
-S.sessions=S.sessions.filter(s=>!s.demo);
-Object.keys(S.cohorts).forEach(k=>{if(S.cohorts[k].demo)delete S.cohorts[k]});
-S.seeded={};S.cohortsSeeded=false;
 
 /* ---------- time ---------- */
 const fmt=ms=>{ms=Math.max(0,Math.floor(ms/1000));const h=Math.floor(ms/3600),m=Math.floor(ms%3600/60),s=ms%60;return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')};
@@ -159,6 +201,12 @@ const elapsed=(s,now=Date.now())=>(s.endAt||now)-s.startAt-pausedMs(s,now);
 const hhmm=t=>new Date(t).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
 const sameDay=t=>new Date(t).toDateString()===new Date().toDateString();
 const live=()=>S.sessions.find(s=>s.workerId===S.user?.id&&(s.status==='ACTIVE'||s.status==='PAUSED'));
+const whenTxt=t=>t?(sameDay(t)?hhmm(t):new Date(t).toLocaleDateString([], {month:'short',day:'numeric'})+' '+hhmm(t)):'';
+const descHtml=a=>a&&a.desc?`<div class="desc">${esc(a.desc)}</div>`:'';
+function raHtml(s){
+  const r=s&&s.ra;if(!r)return'';
+  return `<div class="ra"><b>Reassigned</b> ${esc(r.fromName||r.from)} → you${r.byName?' · by '+esc(r.byName):''}${r.at?' · '+whenTxt(r.at):''}${r.origName?' · originally '+esc(r.origName):''}${r.note?`<div class="ranote">“${esc(r.note)}”</div>`:''}</div>`;
+}
 
 /* ---------- ui helpers ---------- */
 function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2600)}
@@ -177,6 +225,7 @@ function loginView(){
   <form id="lf" class="sec" autocomplete="off">
    <div class="field"><label for="wid">Worker ID</label><input id="wid" type="text" autocapitalize="none" autocorrect="off" value="${esc(ui.wid||'')}" placeholder="e.g. lisa"></div>
    <div class="field"><label for="pin">PIN</label><input id="pin" type="password" inputmode="numeric" placeholder="4-digit PIN"></div>
+   <label class="chk"><input id="rem" type="checkbox" ${ui.remember?'checked':''}> Keep me signed in on this device</label>
    <div id="lerr" class="tag bad" ${ui.loginMsg?'':'hidden'}>${esc(ui.loginMsg||'')}</div>
    <button class="btn pri" type="submit">Sign in</button></form>
   </div>`;
@@ -188,8 +237,9 @@ function todayView(){
   let h=`<div><div class="eyebrow">${new Date().toLocaleDateString([], {weekday:'long',month:'short',day:'numeric'})}</div><h1>${g}, ${esc(u.name.split(' ')[0])}</h1></div>`;
   if(cur)h+=`<section class="sec"><div class="eyebrow">In progress</div>${taskCard(cur)}</section>`;
   h+=`<section class="sec"><div class="row"><h2>Assigned to you</h2><span class="muted" style="font-size:13px">${assigned.length} waiting</span></div>`;
-  h+=assigned.length?`<div class="list">${assigned.map(s=>{const a=actBy(s.actId),b=bedBy(s.bedId);return `<button class="item" data-a="startAssigned" data-id="${s.id}"><div class="grow"><div class="t">${esc(a.name)}</div><div class="s"><span class="bedid">${esc(s.bedId)}</span> ${esc(a.phase)}${b?' · '+bedType(b):''}</div></div><span class="tag">Start</span></button>`}).join('')}</div>`:`<div class="empty">Nothing assigned right now. Pick a bed to start a task.</div>`;
+  h+=assigned.length?`<div class="list">${assigned.map(s=>{const a=actBy(s.actId),b=bedBy(s.bedId);return `<button class="item" data-a="startAssigned" data-id="${s.id}"><div class="grow"><div class="t">${esc(a.name)}</div><div class="s"><span class="bedid">${esc(s.bedId)}</span> ${esc(a.phase)}${b?' · '+bedType(b):''}</div>${descHtml(a)}${raHtml(s)}</div><span class="tag">Start</span></button>`}).join('')}</div>`:`<div class="empty">Nothing assigned right now. Pick a bed to start a task.</div>`;
   h+=`<button class="btn pri" data-a="newTask" ${cur?'disabled':''}>Scan a bed to start a task</button>${cur?'<div class="muted" style="font-size:13px">Finish or pause-and-complete the task in progress first.</div>':''}</section>`;
+  if(S.handed&&S.handed.length)h+=`<section class="sec"><h2>Reassigned to others</h2><div class="list">${S.handed.map(x=>`<div class="item"><div class="grow"><div class="t">${esc(x.actName)}</div><div class="s"><span class="bedid">${esc(x.bedId)}</span> you → ${esc(x.toName)}${x.at?' · '+whenTxt(x.at):''}</div>${x.note?`<div class="desc">“${esc(x.note)}”</div>`:''}</div><span class="tag mut">${esc(({ASSIGNED:'Waiting',ACTIVE:'Running',PAUSED:'Paused'})[x.status]||x.status)}</span></div>`).join('')}</div></section>`;
   if(done.length)h+=`<section class="sec"><h2>Done today</h2><div class="list">${done.map(s=>{const a=actBy(s.actId);return `<div class="item"><div class="grow"><div class="t">${esc(a.name)}</div><div class="s"><span class="bedid">${esc(s.bedId)}</span> ${fmt(elapsed(s)).slice(0,5)} h:m${s.qtyText?' · '+esc(s.qtyText):''}</div></div><span class="tag mut">${hhmm(s.endAt)}</span></div>`}).join('')}</div></section>`;
   return h;
 }
@@ -198,7 +248,7 @@ function taskCard(s){
   const crop=coh?{name:coh.crop}:null;
   return `<div class="task ${paused?'paused':''}"><div class="band"></div><div class="in">
    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="bedid">${esc(s.bedId)}</span><span class="tag ${paused?'mut':'sun'}">${paused?'Paused · '+esc(s.pauses[s.pauses.length-1].reason):'Running'}</span>${crop?`<span class="tag">${esc(crop.name)}</span>`:''}</div>
-   <div><h2>${esc(a.name)}</h2>${a.desc?`<div class="muted" style="font-size:13px;margin-top:4px">${esc(a.desc)}</div>`:''}</div>
+   <div><h2>${esc(a.name)}</h2>${a.desc?`<div class="muted" style="font-size:13px;margin-top:4px">${esc(a.desc)}</div>`:''}${raHtml(s)}</div>
    <div class="timer" data-timer="${s.id}">${fmt(elapsed(s))}</div>
    <div class="muted" style="font-size:13px">Started ${hhmm(s.startAt)} · paused ${Math.round(pausedMs(s,Date.now())/60000)} min</div>
    <div class="btns">${paused?`<button class="btn sun" data-a="resume">Resume</button>`:`<button class="btn" data-a="pause">Pause</button>`}<button class="btn pri" data-a="complete">Complete</button></div></div></div>`;
@@ -229,7 +279,7 @@ function bedView(){
   <div><div class="eyebrow">${esc(bayBy(b.bay).name)} · ${esc(bayBy(b.bay).zone)}</div><h1 class="mono" style="font-family:var(--f-mono)">${b.id}</h1></div>
   <div class="card"><dl class="kv"><dt>Type</dt><dd>${bedType(b)}</dd><dt>Length</dt><dd>${b.len} ft</dd><dt>Crop</dt><dd>${c?esc(c.crop)+' <span class="tag '+(c.stage==='HARVEST_READY'?'sun':'')+'">'+(STAGE[c.stage]||c.stage)+'</span>':'<span class="tag mut">Empty</span>'}</dd>${c?`<dt>Cohort</dt><dd class="mono">${esc(c.id)}</dd><dt>${c.planted?'Planted':'Planned'}</dt><dd>${esc(c.dob)}${c.planted?' · day '+days:''}</dd>${c.stage==='PRE_PLANTING'?`<dt>Bed</dt><dd>${c.ver?'<span class="tag">Verified ready</span>':'<span class="tag mut">Waiting for manager check</span>'}</dd>`:''}`:''}</dl>
   </div>
-  ${S.sessions.some(s=>s.bedId===b.id&&s.status==='ASSIGNED')?`<section class="sec"><h2>Assigned to you here</h2><div class="list">${S.sessions.filter(s=>s.bedId===b.id&&s.status==='ASSIGNED').map(s=>`<button class="item" data-a="startAssigned" data-id="${s.id}"><div class="grow"><div class="t">${esc(actBy(s.actId).name)}</div><div class="s">${esc(actBy(s.actId).phase)}</div></div><span class="tag">Start</span></button>`).join('')}</div></section>`:''}
+  ${S.sessions.some(s=>s.bedId===b.id&&s.status==='ASSIGNED')?`<section class="sec"><h2>Assigned to you here</h2><div class="list">${S.sessions.filter(s=>s.bedId===b.id&&s.status==='ASSIGNED').map(s=>`<button class="item" data-a="startAssigned" data-id="${s.id}"><div class="grow"><div class="t">${esc(actBy(s.actId).name)}</div><div class="s">${esc(actBy(s.actId).phase)}</div>${descHtml(actBy(s.actId))}${raHtml(s)}</div><span class="tag">Start</span></button>`).join('')}</div></section>`:''}
   <div class="btns"><button class="btn pri" data-a="startHere" data-id="${b.id}" ${cur?'disabled':''}>Start task here</button><button class="btn" data-a="scoutHere" data-id="${b.id}">Scout</button></div>
   ${cur?'<div class="muted" style="font-size:13px">A task is already in progress.</div>':''}
   <section class="sec"><h2>Recent work</h2>${hist.length?`<div class="list">${hist.map(l=>`<div class="item"><div class="grow"><div class="t">${esc(l.act)}</div><div class="s">${esc(l.worker)} · ${new Date(l.end).toLocaleDateString()} · ${l.min} min${l.qty?' · '+esc(l.qty):''}</div></div></div>`).join('')}</div>`:'<div class="empty">No work logged on this bed yet.</div>'}</section>
@@ -438,7 +488,7 @@ document.addEventListener('click',e=>{
      {const o=S.issues[S.issues.length-1];enqueue('wIssue',{id:o.id,bedId:o.bedId,cat:o.cat,note:o.note,ask:o.ask,at:o.at})}
      ui.issue=null;render();toast(d.ask?'Sent. A manager has been asked to step in':'Report saved');break}
    case'conn':{const q=S.queue.filter(x=>x.u===S.user?.id).length;toast(!ui.online?'Offline. '+(q?q+' change(s) will sync when you are back online':'Changes will sync when you are back online'):q?'Syncing '+q+' change(s)':'Connected to the ranch workbook');pull(true);break}
-   case'logout':{if(live()){toast('Complete or finish your task before signing out');break}if(S.queue.some(x=>x.u===S.user.id)){toast('Some changes have not synced yet. Connect to the internet first.');break}api('wLogout');S.user=null;S.token=null;ui={...ui,tab:'today',bed:null,loginMsg:''};save();render();break}
+   case'logout':{if(live()){toast('Complete or finish your task before signing out');break}if(S.queue.some(x=>x.u===S.user.id)){toast('Some changes have not synced yet. Connect to the internet first.');break}api('wLogout');save();clearAuth();S.user=null;S.token=null;ui={...ui,tab:'today',bed:null,loginMsg:'',remember:false};render();break}
   }
 });
 document.addEventListener('submit',async e=>{
@@ -449,8 +499,8 @@ document.addEventListener('submit',async e=>{
     btn.disabled=true;btn.textContent='Signing in…';er.hidden=true;
     const r=await api('workerLogin',{user:id,pin});
     if(!r.ok){er.textContent=r.code==='NET'?'Cannot reach the server. Check your connection and try again.':r.error;er.hidden=false;btn.disabled=false;btn.textContent='Sign in';return}
-    if(S.lastUser&&S.lastUser!==r.user.id){const keep=new Set(S.queue.map(q=>q.p.sessionId));S.sessions=S.sessions.filter(x=>keep.has(x.id));S.cohorts={};}
-    S.token=r.token;S.user=r.user;S.lastUser=r.user.id;ui.loginMsg='';ui.online=true;ui.tab='today';save();render();pull();
+    S.token=r.token;S.user=r.user;loadData(r.user.id);writeAuth(!!ui.remember);
+    ui.loginMsg='';ui.online=true;ui.tab='today';save();render();pull();
   }
   if(e.target.id==='qf'){
     const raw=$('#qr').value.trim(),hit=resolveBed(raw);
@@ -469,7 +519,8 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('change',e=>{
   const i=e.target.id;
-  if(i==='sc-bed')ui.scout.bed=e.target.value;
+  if(i==='rem')ui.remember=e.target.checked;
+  else if(i==='sc-bed')ui.scout.bed=e.target.value;
   else if(i==='is-bed')ui.issue.bed=e.target.value;
   else if(i==='sc-photo'&&e.target.files[0]){
     const f=e.target.files[0],r=new FileReader();
@@ -488,7 +539,7 @@ async function api(action,payload={}){
 }
 function enqueue(k,p){S.queue.push({k,u:S.user.id,p,t:Date.now()});save();paintTop();flush()}
 function softRender(){const a=document.activeElement;if(!$('#sheet').hidden||(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)))paintTop();else render()}
-function expire(){S.token=null;S.user=null;ui.loginMsg='Your session expired. Sign in again to finish syncing.';save();render()}
+function expire(){save();clearAuth();S.token=null;S.user=null;ui.loginMsg='Your session expired. Sign in again to finish syncing.';render()}
 let flushing=false;
 async function flush(){
   if(flushing||!S.token||!S.user)return;flushing=true;
@@ -512,9 +563,9 @@ function applySync(r){
   S.ref={beds:D.beds,bays:D.bays,acts:D.acts,qr:D.qr};
   if(!D.bays.find(b=>b.id===ui.bay)&&D.bays[0])ui.bay=D.bays[0].id;
   const pend=new Set(S.queue.map(q=>q.p.sessionId).filter(Boolean)),pid=new Set(S.queue.map(q=>q.p.id).filter(Boolean));
-  const fresh=r.sessions.filter(x=>!pend.has(x.id)&&x.startAt!==null||x.status==='ASSIGNED'&&!pend.has(x.id)).map(x=>({id:x.id,workerId:x.workerId,managerId:x.managerId,bedId:x.bedId,actId:actIdByName(x.actName),status:x.status,startAt:x.startAt,endAt:x.endAt,pauses:x.pauses,cropId:x.cropId||undefined,qtyText:x.qtyText}));
+  const fresh=r.sessions.filter(x=>!pend.has(x.id)&&x.startAt!==null||x.status==='ASSIGNED'&&!pend.has(x.id)).map(x=>({id:x.id,workerId:x.workerId,managerId:x.managerId,bedId:x.bedId,actId:actIdByName(x.actName),status:x.status,startAt:x.startAt,endAt:x.endAt,pauses:x.pauses,cropId:x.cropId||undefined,qtyText:x.qtyText,ra:x.ra||undefined}));
   S.sessions=fresh.concat(S.sessions.filter(x=>pend.has(x.id)));
-  S.cohorts=r.cohorts;S.log=r.log;
+  S.cohorts=r.cohorts;S.log=r.log;S.handed=r.handedOff||[];
   S.scouts=r.scouts.concat(S.scouts.filter(x=>pid.has(x.id)));
   S.issues=r.issues.concat(S.issues.filter(x=>pid.has(x.id)));
 }
