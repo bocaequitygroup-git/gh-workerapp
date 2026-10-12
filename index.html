@@ -459,7 +459,7 @@ document.addEventListener('click',e=>{
    case'startHere':activitySheet(id);break;
    case'scoutHere':ui.scout={bed:id,act:'',sev:null,value:'',note:'',photo:null};ui.tab='scout';render();break;
    case'pickAct':{const A=actBy(id),C=S.cohorts[sh.bedId];
-     if(A.phase==='Planting'&&!C){toast('Planting needs a cohort planned on this bed');break}
+     if(A.phase==='Planting'&&(!C||C.stage!=='PRE_PLANTING'||C.ver===false)){toast('Planting needs a cohort on this bed with the bed verified ready by a manager');break}
      if(A.phase==='Harvest'&&!(C&&C.stage==='HARVEST_READY')){toast('Harvest needs the crop verified mature by a manager');break}
      const s={id:newSid(),workerId:S.user.id,managerId:'',bedId:sh.bedId,actId:id,status:'ASSIGNED',pauses:[]};S.sessions.push(s);begin(s);break}
    case'startAssigned':{if(live()){toast('Finish the task in progress first');break}begin(S.sessions.find(x=>x.id===id));break}
